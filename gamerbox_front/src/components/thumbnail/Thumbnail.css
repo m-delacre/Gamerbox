@@ -1,0 +1,46 @@
+.thumbnail {
+    width: 100%;
+    height: fit-content;
+    padding: 0;
+    margin: 0;
+}
+
+.thumbnail-cover {
+    width: 35%;
+    height: 160px;
+    box-sizing: border-box;
+    padding: 15px;
+}
+
+.thumbnail-cover img {
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+    padding: 0;
+    margin: 0;
+    border: 2px solid white;
+    object-fit: fill;
+}
+
+.thumbnail-info {
+    width: 60%;
+    height: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+    padding: 0px;
+}
+
+.thumbnail-info h2{
+    width: 100%;
+    height: 100%;
+    font-size: 23px;
+}
+
+.thumbnail-info h3{
+    width: 100%;
+    height: 100%;
+    font-size: 18px;
+}

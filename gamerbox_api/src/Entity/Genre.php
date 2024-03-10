@@ -6,6 +6,7 @@ use App\Repository\GenreRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: GenreRepository::class)]
 class Genre
@@ -16,7 +17,12 @@ class Genre
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['full_game'])]
     private ?string $name = null;
+
+    #[ORM\Column]
+    #[Groups(['full_game'])]
+    private ?int $igdbId = null;
 
     #[ORM\ManyToMany(targetEntity: Game::class, mappedBy: 'genre')]
     private Collection $games;
@@ -66,6 +72,18 @@ class Genre
         if ($this->games->removeElement($game)) {
             $game->removeGenre($this);
         }
+
+        return $this;
+    }
+
+    public function getIgdbId(): ?int
+    {
+        return $this->igdbId;
+    }
+
+    public function setIgdbId(int $igdbId): static
+    {
+        $this->igdbId = $igdbId;
 
         return $this;
     }

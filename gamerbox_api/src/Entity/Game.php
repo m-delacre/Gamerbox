@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: GameRepository::class)]
 class Game
@@ -17,33 +18,47 @@ class Game
     private ?int $id = null;
 
     #[ORM\Column]
+    #[Groups(['full_game'])]
     private ?int $igdbId = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['full_game'])]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['full_game'])]
     private ?string $slug = null;
 
-    #[ORM\Column(type: Types::TEXT)]
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(['full_game'])]
     private ?string $summary = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[Groups(['full_game'])]
     private ?\DateTimeInterface $releaseDate = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['full_game'])]
     private ?string $developers = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['full_game'])]
     private ?string $banner = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['full_game'])]
+    private ?string $cover = null;
+
     #[ORM\ManyToMany(targetEntity: GameMode::class, inversedBy: 'games')]
+    #[Groups(['full_game'])]
     private Collection $modes;
 
     #[ORM\ManyToMany(targetEntity: Theme::class, inversedBy: 'games')]
+    #[Groups(['full_game'])]
     private Collection $theme;
 
     #[ORM\ManyToMany(targetEntity: Genre::class, inversedBy: 'games')]
+    #[Groups(['full_game'])]
     private Collection $genre;
 
     public function __construct()
@@ -99,7 +114,7 @@ class Game
         return $this->summary;
     }
 
-    public function setSummary(string $summary): static
+    public function setSummary(?string $summary): static
     {
         $this->summary = $summary;
 
@@ -210,6 +225,18 @@ class Game
     public function removeGenre(Genre $genre): static
     {
         $this->genre->removeElement($genre);
+
+        return $this;
+    }
+
+    public function getCover(): ?string
+    {
+        return $this->cover;
+    }
+
+    public function setCover(?string $cover): static
+    {
+        $this->cover = $cover;
 
         return $this;
     }

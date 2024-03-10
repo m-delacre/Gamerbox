@@ -1,0 +1,17 @@
+.WatchListButton {
+    background-color: #11102F;
+    width: 20px;
+    height: 20px;
+    padding: 15px ;
+    border-radius: 100%;
+    border: 2px solid white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.WatchListButton p{
+    font-size: 30px;
+    color: #24FF00;
+    font-weight: 700;
+}

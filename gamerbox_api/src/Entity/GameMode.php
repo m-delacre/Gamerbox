@@ -6,6 +6,7 @@ use App\Repository\GameModeRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: GameModeRepository::class)]
 class GameMode
@@ -16,7 +17,12 @@ class GameMode
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['full_game'])]
     private ?string $name = null;
+
+    #[ORM\Column]
+    #[Groups(['full_game'])]
+    private ?int $igdbId = null;
 
     #[ORM\ManyToMany(targetEntity: Game::class, mappedBy: 'modes')]
     private Collection $games;
@@ -66,6 +72,18 @@ class GameMode
         if ($this->games->removeElement($game)) {
             $game->removeMode($this);
         }
+
+        return $this;
+    }
+
+    public function getIgdbId(): ?int
+    {
+        return $this->igdbId;
+    }
+
+    public function setIgdbId(int $igdbId): static
+    {
+        $this->igdbId = $igdbId;
 
         return $this;
     }

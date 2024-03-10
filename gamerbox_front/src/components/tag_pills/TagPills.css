@@ -1,0 +1,14 @@
+.tagpills {
+    background-color: #11102F;
+    width: fit-content;
+    height: fit-content;
+    padding: 5px 20px ;
+    border-radius: 50px;
+    border: 2px solid white;
+}
+
+.tagpills p {
+    font-size: 20px;
+    font-weight: 700;
+    color: #24FF00;
+}
