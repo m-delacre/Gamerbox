@@ -1,0 +1,144 @@
+.game-top {
+    width: 100%;
+    height: 600px;
+    background-color: #111111;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 80px;
+}
+
+.game-top-banner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.game-top-banner:before {
+    content: "";
+    display: block;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to top, #111111, #1111118e);
+    z-index: 2;
+}
+
+.game-top-banner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: blur(3px);
+}
+
+.game-top-info {
+    position: absolute;
+    top: 325px;
+    width: 1000px;
+    height: 350px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+}
+
+.game-top-info-cover {
+    width: 30%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+    padding: 2%;
+}
+
+.game-top-info-cover img {
+    width: 95%;
+    height: 100%;
+    object-fit: fill;
+    border-radius: 30px;
+}
+
+.game-top-info-data {
+    width: 50%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    color: #b000bf;
+    font-weight: 700;
+    padding: 0;
+    margin: 0;
+}
+
+.game-top-info-data h2 {
+    font-size: 40px;
+    padding: 0;
+    margin: 0px;
+}
+
+.game-top-info-data h3 {
+    font-size: 25px;
+    margin: 0;
+    margin-bottom: 20px;
+    color: white;
+}
+
+.game-top-info-data-modes {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 15px;
+    margin: 0;
+    margin-bottom: 20px;
+}
+
+.game-top-info-note {
+    width: 20%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    align-items: center;
+}
+
+.game-bottom {
+    background-color: #111111;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 100px;
+    gap: 30px;
+}
+
+.game-bottom-category {
+    width: 1000px;
+    display: flex; 
+    flex-direction: column;
+}
+
+.game-bottom-category h4{
+    font-size: 25px;
+    color: #b000bf;
+    border-bottom: 2px solid #b000bf;
+}
+
+.game-bottom-category-pills{
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.game-bottom-category .summary {
+    margin: 0;
+    font-size: 20px;
+}
+
+.game-bottom-reviews{
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
