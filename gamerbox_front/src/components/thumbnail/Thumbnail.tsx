@@ -14,7 +14,6 @@ function Thumbnail({ name, releaseDate, cover }: ThumbnailProps) {
             </div>
             <div className="thumbnail-info">
                 <h2>{name} - {releaseDate}</h2>
-                {/* <h3>{releaseDate}</h3> */}
             </div>
         </article>
     );

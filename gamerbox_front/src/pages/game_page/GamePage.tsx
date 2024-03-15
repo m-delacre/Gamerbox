@@ -12,6 +12,8 @@ import pictureOrc from "../../assets/user_orc.png";
 import pictureRobot from "../../assets/user_robot.png";
 import pictureDivers from "../../assets/user_divers.png";
 import pictureChat from "../../assets/chatpote.jpg";
+import noCover from "../../assets/img_not_available.jpg";
+import noBanner from "../../assets/gamerbox_img.png";
 import WatchListButton from "../../components/watchlist_button/WatchListButton";
 
 type GameInfo = {
@@ -49,14 +51,18 @@ function GamePage() {
             if (gameData?.banner != null) {
                 setBanner(ImageModifier.replaceThumbWithScreenshotHuge(gameData?.banner));
             } else {
-                setBanner(pictureChat);
+                setBanner(noBanner);
             }
-            setCover(ImageModifier.replaceThumbWith1080p(gameData?.cover));
+            if (gameData?.cover != null) {
+                setCover(ImageModifier.replaceThumbWith1080p(gameData?.cover));
+            } else {
+                setCover(noCover);
+            }
             setReleaseDate(DateFormater.formatFrenchDate(gameData?.releaseDate));
             setDevelopers(gameData?.developers);
         };
         fetchData().catch(console.error);
-    }, []);
+    }, [gameId]);
 
     if (game === null) {
         return <></>;

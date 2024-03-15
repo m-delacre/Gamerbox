@@ -1,3 +1,5 @@
+/// <reference types="node" />
+
 import { useEffect, useState } from "react";
 import "./SearchBar.css";
 import GamerboxApi from "../../services/gamerbox_api";
@@ -22,8 +24,10 @@ type ThumbnailType = {
 
 function SearchBar() {
     const [input, setInput] = useState<string>("");
-    const [offset, setOffset] = useState<number>(0);
-    const [limit, setLimit] = useState<number>(5);
+    // const [offset, setOffset] = useState<number>(0);
+    // const [limit, setLimit] = useState<number>(5);
+    const offset: number = 0;
+    const limit: number = 5;
     const [data, setData] = useState<ThumbnailType[] | null>();
     const [visible, setVisible] = useState<boolean>(false);
 
@@ -31,20 +35,41 @@ function SearchBar() {
         if (value.length > 3) {
             setInput(value);
             setVisible(true);
+        } else {
+            setVisible(false);
         }
     }
 
     useEffect(() => {
+        let timeoutId: NodeJS.Timeout | undefined;
+
         const fetchData = async () => {
-            const thumbnails = await GamerboxApi.searchGames(
-                input,
-                offset,
-                limit
-            );
-            setData(thumbnails);
-            console.log(thumbnails);
+            try {
+                const thumbnails = await GamerboxApi.searchGames(
+                    input,
+                    offset,
+                    limit
+                );
+                setData(thumbnails);
+                console.log(thumbnails);
+            } catch (error) {
+                console.error(error);
+            }
         };
-        fetchData().catch(console.error);
+
+        if (input && input.length >= 3) {
+            // Annuler le timeout existant s'il y en a un
+            clearTimeout(timeoutId);
+
+            timeoutId = setTimeout(() => {
+                fetchData();
+            }, 500);
+        }
+
+        // Nettoyer le timeout lorsqu'un nouveau rendu se produit ou lorsque le composant est démonté
+        return () => {
+            clearTimeout(timeoutId);
+        };
     }, [input]);
 
     return (
@@ -71,20 +96,22 @@ function SearchResults({ visible, data, input }: searchResults) {
                     <p>Results :</p>
                 </div>
                 {data?.map((thumbnail: any) => (
-                    <Thumbnail
-                        key={`${thumbnail.name}-${thumbnail.igdbId}`}
-                        name={thumbnail.name}
-                        cover={
-                            thumbnail.cover
-                                ? ImageModifier.replaceThumbWith1080p(
-                                      thumbnail.cover
-                                  )
-                                : noCover
-                        }
-                        releaseDate={DateFormater.formatFrenchDate(
-                            thumbnail.releaseDate
-                        )}
-                    />
+                    <Link to={`/game/${thumbnail.igdbId}`}>
+                        <Thumbnail
+                            key={`${thumbnail.name}-${thumbnail.igdbId}`}
+                            name={thumbnail.name}
+                            cover={
+                                thumbnail.cover
+                                    ? ImageModifier.replaceThumbWith1080p(
+                                          thumbnail.cover
+                                      )
+                                    : noCover
+                            }
+                            releaseDate={DateFormater.formatFrenchDate(
+                                thumbnail.releaseDate
+                            )}
+                        />
+                    </Link>
                 ))}
                 <div>
                     <Link to={`/search/${input}`}>

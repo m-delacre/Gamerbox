@@ -6,6 +6,7 @@ import "./index.css";
 import ErrorPage from "./pages/error_page/error_page.tsx";
 import GamePage from "./pages/game_page/GamePage.tsx";
 import Footer from "./components/footer/Footer.tsx";
+import SearchPage from "./pages/search_page/SearchPage.tsx";
 
 const router = createBrowserRouter([
     {
@@ -20,7 +21,7 @@ const router = createBrowserRouter([
     },
     {
         path: "/search/:gameName",
-        element: <GamePage />,
+        element: <SearchPage />,
         errorElement: <ErrorPage />,
     },
     {
