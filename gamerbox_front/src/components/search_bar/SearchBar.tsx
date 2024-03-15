@@ -11,8 +11,9 @@ import { Link } from "react-router-dom";
 
 type searchResults = {
     visible: boolean;
-    data: Array<object> | null | undefined;
+    data: Array<ThumbnailType> | null | undefined;
     input: string;
+    setSearchBarVisible: (isVisible: boolean) => void;
 };
 
 type ThumbnailType = {
@@ -24,8 +25,6 @@ type ThumbnailType = {
 
 function SearchBar() {
     const [input, setInput] = useState<string>("");
-    // const [offset, setOffset] = useState<number>(0);
-    // const [limit, setLimit] = useState<number>(5);
     const offset: number = 0;
     const limit: number = 5;
     const [data, setData] = useState<ThumbnailType[] | null>();
@@ -38,6 +37,10 @@ function SearchBar() {
         } else {
             setVisible(false);
         }
+    }
+
+    function setSearchBarVisible(isVisible: boolean) {
+        setVisible(isVisible);
     }
 
     useEffect(() => {
@@ -81,13 +84,18 @@ function SearchBar() {
                 placeholder="Search a game..."
                 onChange={(e) => changeInputValue(e.target.value)}
             />
-            <SearchResults visible={visible} data={data} input={input} />
+            <SearchResults
+                visible={visible}
+                data={data}
+                input={input}
+                setSearchBarVisible={setSearchBarVisible}
+            />
         </div>
     );
 }
 
-function SearchResults({ visible, data, input }: searchResults) {
-    if (visible === false) {
+function SearchResults(props: searchResults) {
+    if (props.visible === false) {
         return <div className="searchResults noDisplay"></div>;
     } else {
         return (
@@ -95,26 +103,34 @@ function SearchResults({ visible, data, input }: searchResults) {
                 <div>
                     <p>Results :</p>
                 </div>
-                {data?.map((thumbnail: any) => (
-                    <Link to={`/game/${thumbnail.igdbId}`}>
-                        <Thumbnail
-                            key={`${thumbnail.name}-${thumbnail.igdbId}`}
-                            name={thumbnail.name}
-                            cover={
-                                thumbnail.cover
-                                    ? ImageModifier.replaceThumbWith1080p(
-                                          thumbnail.cover
-                                      )
-                                    : noCover
-                            }
-                            releaseDate={DateFormater.formatFrenchDate(
-                                thumbnail.releaseDate
-                            )}
-                        />
-                    </Link>
+                {props.data?.map((thumbnail: any) => (
+                    <button
+                        className="nostyle"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            props.setSearchBarVisible(false);
+                        }}
+                    >
+                        <Link to={`/game/${thumbnail.igdbId}`}>
+                            <Thumbnail
+                                key={`${thumbnail.name}-${thumbnail.igdbId}`}
+                                name={thumbnail.name}
+                                cover={
+                                    thumbnail.cover
+                                        ? ImageModifier.replaceThumbWith1080p(
+                                              thumbnail.cover
+                                          )
+                                        : noCover
+                                }
+                                releaseDate={DateFormater.formatFrenchDate(
+                                    thumbnail.releaseDate
+                                )}
+                            />
+                        </Link>
+                    </button>
                 ))}
                 <div>
-                    <Link to={`/search/${input}`}>
+                    <Link to={`/search/${props.input}`}>
                         <p>See more</p>
                     </Link>
                 </div>

@@ -51,3 +51,9 @@ input[type="text"]:active {
 .display {
     display: block;
 }
+
+.nostyle {
+    border: 0;
+    outline: 0;
+    background: none;
+}

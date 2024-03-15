@@ -11,7 +11,6 @@ function Header() {
                 <img src={logo} alt="gamerbox logo" />
             </Link>
             <NavLink route="/" text="Home" />
-            <NavLink route="/game/1942" text="Witcher" />
             <div className="searchBar">
                 <SearchBar />
             </div>
