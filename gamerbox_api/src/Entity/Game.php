@@ -10,6 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: GameRepository::class)]
+#[ORM\Table(name: "Game", options: ["engine" => "InnoDB"])]
 class Game
 {
     #[ORM\Id]

@@ -105,6 +105,7 @@ function SearchResults(props: searchResults) {
                 </div>
                 {props.data?.map((thumbnail: any) => (
                     <button
+                        key={`${thumbnail.name}-${thumbnail.igdbId}`}
                         className="nostyle"
                         onClick={(e) => {
                             e.preventDefault();
@@ -113,7 +114,7 @@ function SearchResults(props: searchResults) {
                     >
                         <Link to={`/game/${thumbnail.igdbId}`}>
                             <Thumbnail
-                                key={`${thumbnail.name}-${thumbnail.igdbId}`}
+                                
                                 name={thumbnail.name}
                                 cover={
                                     thumbnail.cover

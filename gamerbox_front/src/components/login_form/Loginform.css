@@ -1,0 +1,97 @@
+.mainContainer {
+    flex-direction: column;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: fit-content;
+}
+
+.titleContainer {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    width: 100%;
+    font-size: 64px;
+    color: #b000bf;
+    font-weight: bolder;
+    align-items: center;
+    justify-content: center;
+}
+
+.titleContainer img {
+  width: 80px;
+  height: 60px;
+}
+
+.resultContainer,
+.historyItem {
+    flex-direction: row;
+    display: flex;
+    width: 400px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.historyContainer {
+    flex-direction: column;
+    display: flex;
+    height: 200px;
+    align-items: center;
+    flex-grow: 5;
+    justify-content: flex-start;
+}
+
+.buttonContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 260px;
+}
+
+.inputContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.inputContainer > .errorLabel {
+    color: red;
+    font-size: 16px;
+}
+
+.inputBox {
+    height: 48px;
+    width: 400px;
+    font-size: large;
+    border-radius: 10px;
+    border: 2px solid white;
+    padding-left: 8px;
+    color: #24ff00;
+    background-color: #11112f;
+}
+
+.inputBox::placeholder{
+  color: white;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.inputButton {
+    outline: 0;
+    border: 2px solid white;
+    padding: 10px 20px;
+    font-size: 18px;
+    font-weight: 600;
+    border-radius: 10px;
+    background-color: #11112f;
+    color: #24ff00;
+}
+
+.inputButton:hover {
+    background-color: white;
+    color: #b000bf;
+    cursor: pointer;
+    border: 2px solid #11112f;
+}

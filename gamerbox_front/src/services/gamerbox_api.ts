@@ -73,6 +73,35 @@ class GamerboxApi {
             return null;
         }
     }
+
+    static async login(email: string, password: string) {
+        const url = `https://127.0.0.1:8000/api/login_check`;
+        const data = {
+            username: email,
+            password: password,
+        };
+
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    'Content-Type': "application/json",
+                },
+                body: JSON.stringify(data),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const token: string = await response.json();
+
+            return token;
+        } catch (error) {
+            console.error("Error fetching user:", error);
+            return null;
+        }
+    }
 }
 
 export default GamerboxApi;

@@ -32,37 +32,21 @@ function SearchPage() {
                     offset,
                     limit
                 );
-                console.log(thumbnails);
+
                 if (thumbnails && thumbnails.length === 0) {
                     setNomore(true);
                 }
-                // explication needed
+
                 let newValues: Array<any> = [];
                 if (data && data.length > 0) {
                     newValues.push(...data);
                 }
+
                 if (thumbnails) {
                     newValues.push(...thumbnails);
                 }
+
                 setData(newValues);
-                // setData(() => {
-                //     let newValues: Array<any> = [];
-                //     if (data && data.length > 0) {
-                //         newValues.push(...data);
-                //     }
-                //     if (thumbnails) {
-                //         newValues.push(...thumbnails);
-                //     }
-                //     return newValues;
-                //     // const newData = data ? [...data] : [];
-                //     // if (Array.isArray(thumbnails)) {
-                //     //     newData.push(...thumbnails);
-                //     // } else if (thumbnails) {
-                //     //     newData.push(thumbnails);
-                //     // }
-                //     // return newData;
-                // });
-                console.log(thumbnails);
             } catch (error) {
                 console.error(error);
             }

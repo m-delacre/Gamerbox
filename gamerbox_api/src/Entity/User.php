@@ -8,6 +8,7 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
+#[ORM\Table(name: "User", options: ["engine" => "InnoDB"])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -29,6 +30,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\Column]
     private ?string $password = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $pseudonym = null;
 
     public function getId(): ?int
     {
@@ -113,5 +117,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getUsername(): string
     {
         return $this->getUserIdentifier();
+    }
+
+    public function getPseudonym(): ?string
+    {
+        return $this->pseudonym;
+    }
+
+    public function setPseudonym(string $pseudonym): static
+    {
+        $this->pseudonym = $pseudonym;
+
+        return $this;
     }
 }

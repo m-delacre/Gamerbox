@@ -15,7 +15,7 @@ function Header() {
                 <SearchBar />
             </div>
             <NavLink route="" text="Review" />
-            <NavLink route="" text="Connexion" />
+            <NavLink route="/login" text="Connexion" />
         </header>
     );
 }
