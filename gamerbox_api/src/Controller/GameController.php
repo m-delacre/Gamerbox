@@ -2,13 +2,19 @@
 
 namespace App\Controller;
 
+use App\Entity\Game;
+use App\Entity\Wishlist;
+use App\Repository\GameRepository;
+use App\Repository\WishlistRepository;
 use App\Service\GameBuilder;
 use DateTime;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Component\Serializer\Context\Normalizer\ObjectNormalizerContextBuilder;
@@ -65,5 +71,34 @@ class GameController extends AbstractController
         $serializedGame = $serializer->serialize($game, 'json', $context);
 
         return new JsonResponse($serializedGame, Response::HTTP_OK, [], true);
+    }
+
+    #[IsGranted('ROLE_USER')]
+    #[Route('/api/game/whishlist/{igdbId}', name: 'api_game_add_wishlist', methods: ['POST'])]
+    public function addGameToWishlist(int $igdbId, WishlistRepository $wishlistRepository, EntityManagerInterface $em, GameRepository $gameRepository, GameBuilder $gameBuilder): JsonResponse
+    {
+        $game = $gameRepository->findByIgdbId($igdbId);
+        $user = $this->getUser();
+
+        if(!$game) {
+            $game = $gameBuilder->buildGame($igdbId);
+            $gameRepository->saveGame($game);
+        }
+        
+        $wishlist = $wishlistRepository->findOneByUser($user);
+
+        if(!$wishlist) {
+            $newWishlist = new Wishlist();
+            $newWishlist->setUser($this->getUser());
+            $newWishlist->addGame($game);
+
+            $em->persist($newWishlist);
+        } else {
+            $wishlist->addGame($game);
+        }
+
+        $em->flush();
+
+        return new JsonResponse('Jeu ajouté', Response::HTTP_OK, [], true);
     }
 }

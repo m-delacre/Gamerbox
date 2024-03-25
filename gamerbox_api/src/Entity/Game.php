@@ -62,6 +62,9 @@ class Game
     #[Groups(['full_game'])]
     private Collection $genre;
 
+    #[ORM\ManyToOne(inversedBy: 'game')]
+    private ?Wishlist $wishlist = null;
+
     public function __construct()
     {
         $this->modes = new ArrayCollection();
@@ -238,6 +241,18 @@ class Game
     public function setCover(?string $cover): static
     {
         $this->cover = $cover;
+
+        return $this;
+    }
+
+    public function getWishlist(): ?Wishlist
+    {
+        return $this->wishlist;
+    }
+
+    public function setWishlist(?Wishlist $wishlist): static
+    {
+        $this->wishlist = $wishlist;
 
         return $this;
     }

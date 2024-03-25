@@ -3,12 +3,21 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: "User", options: ["engine" => "InnoDB"])]
+#[UniqueEntity(
+    fields: ['email'],
+    message: 'This email is already in use.',
+)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -17,6 +26,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
+    #[Groups(['user_info'])]
+    #[Assert\Email( message: 'The email {{ value }} is not a valid email.')]
     private ?string $email = null;
 
     /**
@@ -29,10 +40,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var string The hashed password
      */
     #[ORM\Column]
+    #[Assert\NotBlank(message: 'You need to enter a password')]
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['user_info'])]
     private ?string $pseudonym = null;
+
+    #[ORM\OneToMany(targetEntity: Wishlist::class, mappedBy: 'user', orphanRemoval: true)]
+    private Collection $wishlists;
+
+    public function __construct()
+    {
+        $this->wishlists = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -127,6 +148,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPseudonym(string $pseudonym): static
     {
         $this->pseudonym = $pseudonym;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Wishlist>
+     */
+    public function getWishlists(): Collection
+    {
+        return $this->wishlists;
+    }
+
+    public function addWishlist(Wishlist $wishlist): static
+    {
+        if (!$this->wishlists->contains($wishlist)) {
+            $this->wishlists->add($wishlist);
+            $wishlist->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeWishlist(Wishlist $wishlist): static
+    {
+        if ($this->wishlists->removeElement($wishlist)) {
+            // set the owning side to null (unless already changed)
+            if ($wishlist->getUser() === $this) {
+                $wishlist->setUser(null);
+            }
+        }
 
         return $this;
     }
