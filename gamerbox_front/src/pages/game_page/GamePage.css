@@ -142,3 +142,12 @@
     flex-direction: column;
     gap: 30px;
 }
+
+.wishListBtn {
+    border: 2px solid white;
+    background: #b000bf;
+    color: white;
+    width: fit-content;
+    height: fit-content;
+    padding: 10px 20px;
+}

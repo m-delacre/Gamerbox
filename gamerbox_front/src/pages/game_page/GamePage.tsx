@@ -14,7 +14,8 @@ import pictureDivers from "../../assets/user_divers.png";
 import pictureChat from "../../assets/chatpote.jpg";
 import noCover from "../../assets/img_not_available.jpg";
 import noBanner from "../../assets/gamerbox_img.png";
-import WatchListButton from "../../components/watchlist_button/WatchListButton";
+import { selectIsConnected, selectToken } from "../../redux/userSlice";
+import { useSelector } from "react-redux";
 
 type GameInfo = {
     igdbId: number;
@@ -42,6 +43,21 @@ function GamePage() {
     const [releaseDate, setReleaseDate] = useState<string>();
     const [developers, setDevelopers] = useState<string>();
     const [name, setName] = useState<string>();
+    const [token, setToken] = useState<string>(useSelector(selectToken));
+    const [isConnected, setIsConnected] = useState<boolean>(useSelector(selectIsConnected));
+
+
+    const addWishlist = async () => {
+        if (token.length > 0 && isConnected && game) {
+            const res = await GamerboxApi.addToWishlist(game.igdbId, token);
+            if(res) {
+                console.log('youpi')
+            } else {
+                console.log('fail??')
+            }
+        }
+        
+    };
 
     useEffect(() => {
         const fetchData = async () => {
@@ -49,7 +65,11 @@ function GamePage() {
             setGame(gameData);
             setName(gameData?.name);
             if (gameData?.banner != null) {
-                setBanner(ImageModifier.replaceThumbWithScreenshotHuge(gameData?.banner));
+                setBanner(
+                    ImageModifier.replaceThumbWithScreenshotHuge(
+                        gameData?.banner
+                    )
+                );
             } else {
                 setBanner(noBanner);
             }
@@ -58,15 +78,18 @@ function GamePage() {
             } else {
                 setCover(noCover);
             }
-            setReleaseDate(DateFormater.formatFrenchDate(gameData?.releaseDate));
+            setReleaseDate(
+                DateFormater.formatFrenchDate(gameData?.releaseDate)
+            );
             setDevelopers(gameData?.developers);
         };
         fetchData().catch(console.error);
     }, [gameId]);
 
     if (game === null) {
-        return <></>;
+        return <div>Loading...</div>;
     }
+
     return (
         <div>
             <Header />
@@ -84,7 +107,12 @@ function GamePage() {
                             <h3>
                                 {developers} - {releaseDate}
                             </h3>
-                            <WatchListButton />
+                            <button
+                                className="wishListBtn"
+                                onClick={addWishlist}
+                            >
+                                Add Wishlist
+                            </button>
                         </section>
                         <section className="game-top-info-note">
                             <Note note={5} />

@@ -1,12 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-type TypePayload = {
-    id: number,
-    email: string,
-    pseudo: string,
-    token: string
-}
-
 export const userSlice = createSlice({
     name: "user",
     initialState: {
@@ -42,6 +35,7 @@ export const selectUserId = (state: any) => state.user.id;
 export const selectEmail = (state: any) => state.user.email;
 export const selectPseudonym = (state: any) => state.user.pseudonym;
 export const selectToken = (state: any) => state.user.token;
+export const selectIsConnected = (state: any) => state.user.isConnected;
 
 export const { setId, setEmail, setPseudonym, setToken, setConnected, setNotConnected } = userSlice.actions;
 

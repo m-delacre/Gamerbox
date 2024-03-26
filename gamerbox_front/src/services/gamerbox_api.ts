@@ -132,8 +132,31 @@ class GamerboxApi {
             }
 
             const data: UserInfo = await response.json();
-            console.log(data);
+
             return data;
+        } catch (error) {
+            console.error("Error fetching user:", error);
+            return null;
+        }
+    }
+
+    static async addToWishlist(igdbId: number, userToken: string) {
+        const url = `https://127.0.0.1:8000/api/game/whishlist/${igdbId}`;
+
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    'Content-Type': "application/json",
+                    Authorization: `Bearer ${userToken}`,
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            return true;
         } catch (error) {
             console.error("Error fetching user:", error);
             return null;
