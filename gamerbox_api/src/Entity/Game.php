@@ -19,15 +19,15 @@ class Game
     private ?int $id = null;
 
     #[ORM\Column]
-    #[Groups(['full_game'])]
+    #[Groups(['full_game', 'wishlist_game'])]
     private ?int $igdbId = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['full_game'])]
+    #[Groups(['full_game', 'wishlist_game'])]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['full_game'])]
+    #[Groups(['full_game', 'wishlist_game'])]
     private ?string $slug = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -47,7 +47,7 @@ class Game
     private ?string $banner = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['full_game'])]
+    #[Groups(['full_game', 'wishlist_game'])]
     private ?string $cover = null;
 
     #[ORM\ManyToMany(targetEntity: GameMode::class, inversedBy: 'games')]
@@ -62,14 +62,15 @@ class Game
     #[Groups(['full_game'])]
     private Collection $genre;
 
-    #[ORM\ManyToOne(inversedBy: 'game')]
-    private ?Wishlist $wishlist = null;
+    #[ORM\ManyToMany(targetEntity: Wishlist::class, mappedBy: 'game')]
+    private Collection $wishlists;
 
     public function __construct()
     {
         $this->modes = new ArrayCollection();
         $this->theme = new ArrayCollection();
         $this->genre = new ArrayCollection();
+        $this->wishlists = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -245,14 +246,29 @@ class Game
         return $this;
     }
 
-    public function getWishlist(): ?Wishlist
+    /**
+     * @return Collection<int, Wishlist>
+     */
+    public function getWishlists(): Collection
     {
-        return $this->wishlist;
+        return $this->wishlists;
     }
 
-    public function setWishlist(?Wishlist $wishlist): static
+    public function addWishlist(Wishlist $wishlist): static
     {
-        $this->wishlist = $wishlist;
+        if (!$this->wishlists->contains($wishlist)) {
+            $this->wishlists->add($wishlist);
+            $wishlist->addGame($this);
+        }
+
+        return $this;
+    }
+
+    public function removeWishlist(Wishlist $wishlist): static
+    {
+        if ($this->wishlists->removeElement($wishlist)) {
+            $wishlist->removeGame($this);
+        }
 
         return $this;
     }

@@ -1,20 +1,60 @@
 import { useState } from "react";
 import "./Loginform.css";
 import GamerboxApi from "../../services/gamerbox_api";
-import logo from '../../../public/gamerbox_logo.png'
+import logo from '../../../public/gamerbox_logo.png';
+import { useDispatch } from "react-redux";
+import {
+    setId,
+    setEmail,
+    setPseudonym,
+    setToken,
+    setConnected,
+} from "../../redux/userSlice";
+import { redirect } from "react-router-dom";
+
+type Token = {
+    token: string
+}
+
+type UserInfo = {
+    id: number,
+    email: string,
+    pseudonym: string,
+    token: string
+}
 
 function LoginForm() {
-    const [email, setEmail] = useState("");
+    const [formEmail, setFormEmail] = useState("");
     const [password, setPassword] = useState("");
     const [emailError, setEmailError] = useState("");
     const [passwordError, setPasswordError] = useState("");
+    const dispatch = useDispatch();
+
+    const getUserInfo = async (tokenJWT: string) => {
+        try {
+            const res: UserInfo | null = await GamerboxApi.getUserInfo(tokenJWT);
+
+            if (res) {
+                dispatch(setEmail(res.email));
+                dispatch(setId(res.id));
+                dispatch(setPseudonym(res.pseudonym));
+                dispatch(setConnected());
+                redirect('/')
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     const login = async () => {
         try {
-            const token = await GamerboxApi.login(email, password);
+            const res: Token | null = await GamerboxApi.login(formEmail, password);
 
-            if (token) {
-                console.log("We have a token! : ", token);
+            if (res) {
+                const newToken: string = res.token;
+                setToken(newToken);
+                dispatch(setToken(newToken));
+                getUserInfo(res.token);
             }
         } catch (error) {
             console.error(error);
@@ -25,12 +65,12 @@ function LoginForm() {
         setEmailError("");
         setPasswordError("");
 
-        if ("" === email) {
+        if ("" === formEmail) {
             setEmailError("Please enter your email");
             return;
         }
 
-        if (!/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
+        if (!/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(formEmail)) {
             setEmailError("Please enter a valid email");
             return;
         }
@@ -45,7 +85,6 @@ function LoginForm() {
             return;
         }
 
-        // Authentication calls will be made here...
         login();
     };
 
@@ -59,9 +98,9 @@ function LoginForm() {
             <br />
             <div className={"inputContainer"}>
                 <input
-                    value={email}
+                    value={formEmail}
                     placeholder="Enter your email here"
-                    onChange={(ev) => setEmail(ev.target.value)}
+                    onChange={(ev) => setFormEmail(ev.target.value)}
                     className={"inputBox"}
                 />
                 <label className="errorLabel">{emailError}</label>

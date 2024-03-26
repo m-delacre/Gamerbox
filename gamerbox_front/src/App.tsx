@@ -6,7 +6,7 @@ import Footer from "./components/footer/Footer.tsx";
 import SearchPage from "./pages/search_page/SearchPage.tsx";
 import LoginPage from "./pages/login_page/LoginPage.tsx";
 import Home from "./pages/home/Home.tsx";
-import Header from "./components/header/Header.tsx";
+import Profile from "./pages/user_profile/Profile.tsx";
 
 const router = createBrowserRouter([
     {
@@ -27,6 +27,10 @@ const router = createBrowserRouter([
     {
         path: "/login",
         element: <LoginPage />,
+    },
+    {
+        path: "/profile:userId",
+        element: <Profile />,
     },
     {
         path: "/error",

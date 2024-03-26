@@ -77,7 +77,7 @@ class GameController extends AbstractController
     #[Route('/api/game/whishlist/{igdbId}', name: 'api_game_add_wishlist', methods: ['POST'])]
     public function addGameToWishlist(int $igdbId, WishlistRepository $wishlistRepository, EntityManagerInterface $em, GameRepository $gameRepository, GameBuilder $gameBuilder): JsonResponse
     {
-        $game = $gameRepository->findByIgdbId($igdbId);
+        $game = $gameRepository->findOneByIgdbId($igdbId);
         $user = $this->getUser();
 
         if(!$game) {

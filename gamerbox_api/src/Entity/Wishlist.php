@@ -6,6 +6,7 @@ use App\Repository\WishlistRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: WishlistRepository::class)]
 class Wishlist
@@ -19,7 +20,7 @@ class Wishlist
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
-    #[ORM\OneToMany(targetEntity: Game::class, mappedBy: 'wishlist')]
+    #[ORM\ManyToMany(targetEntity: Game::class, inversedBy: 'wishlists')]
     private Collection $game;
 
     public function __construct()
@@ -56,7 +57,6 @@ class Wishlist
     {
         if (!$this->game->contains($game)) {
             $this->game->add($game);
-            $game->setWishlist($this);
         }
 
         return $this;
@@ -64,12 +64,7 @@ class Wishlist
 
     public function removeGame(Game $game): static
     {
-        if ($this->game->removeElement($game)) {
-            // set the owning side to null (unless already changed)
-            if ($game->getWishlist() === $this) {
-                $game->setWishlist(null);
-            }
-        }
+        $this->game->removeElement($game);
 
         return $this;
     }

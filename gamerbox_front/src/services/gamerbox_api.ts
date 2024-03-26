@@ -19,6 +19,17 @@ type Thumbnails = {
     releaseDate: string;
 };
 
+
+type UserInfo = {
+    id: number,
+    email: string,
+    pseudonym: string,
+    token: string
+}
+
+type Token = {
+    token: string
+}
 class GamerboxApi {
     static async getGame(id: string | undefined) {
         const url = `https://127.0.0.1:8000/api/game/${id}`;
@@ -94,9 +105,35 @@ class GamerboxApi {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
 
-            const token: string = await response.json();
+            const result: Token = await response.json();
 
-            return token;
+            return result;
+        } catch (error) {
+            console.error("Error fetching user:", error);
+            return null;
+        }
+    }
+
+    static async getUserInfo(token: string) {
+        const url = `https://127.0.0.1:8000/api/user`;
+        const userToken = token;
+
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    'Content-Type': "application/json",
+                    Authorization: `Bearer ${userToken}`,
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const data: UserInfo = await response.json();
+            console.log(data);
+            return data;
         } catch (error) {
             console.error("Error fetching user:", error);
             return null;

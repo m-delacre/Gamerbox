@@ -1,34 +1,48 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+type TypePayload = {
+    id: number,
+    email: string,
+    pseudo: string,
+    token: string
+}
+
 export const userSlice = createSlice({
     name: "user",
     initialState: {
-        email: "test@gmail.com",
-        tokenJWT: "azerty123",
-        value: 0,
+        id: 0,
+        email: "",
+        pseudonym: "",
+        token: "",
+        isConnected: false
     },
     reducers: {
-        increment: (state) => {
-            // Redux Toolkit allows us to write "mutating" logic in reducers. It
-            // doesn't actually mutate the state because it uses the immer library,
-            // which detects changes to a "draft state" and produces a brand new
-            // immutable state based off those changes
-            state.value += 1;
-        },
-        decrement: (state) => {
-            state.value -= 1;
-        },
-        incrementByAmount: (state, action) => {
-            state.value += action.payload;
+        setId: (state, action) => {
+            state.id = action.payload;
         },
         setEmail: (state, action) => {
             state.email = action.payload;
+        },
+        setPseudonym: (state, action) => {
+            state.pseudonym = action.payload;
+        },
+        setToken: (state, action) => {
+            state.token = action.payload;
+        },
+        setConnected: (state) => {
+            state.isConnected = true;
+        },
+        setNotConnected: (state) => {
+            state.isConnected = false;
         }
     }
 });
 
+export const selectUserId = (state: any) => state.user.id;
 export const selectEmail = (state: any) => state.user.email;
+export const selectPseudonym = (state: any) => state.user.pseudonym;
+export const selectToken = (state: any) => state.user.token;
 
-export const { increment, decrement, incrementByAmount, setEmail } = userSlice.actions;
+export const { setId, setEmail, setPseudonym, setToken, setConnected, setNotConnected } = userSlice.actions;
 
 export default userSlice.reducer;
