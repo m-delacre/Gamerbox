@@ -34,7 +34,8 @@ function Header() {
                 <Link to="/">
                     <img src={logo} alt="gamerbox logo" />
                 </Link>
-                <NavLink route="/" text="Home" />
+                <Link to="/">Home</ Link>
+                <Link to={`/wishlist/${userId}`}>Wishlist</ Link>
                 <div className="searchBar">
                     <SearchBar />
                 </div>
