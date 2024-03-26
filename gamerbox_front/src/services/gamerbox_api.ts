@@ -19,17 +19,24 @@ type Thumbnails = {
     releaseDate: string;
 };
 
-
 type UserInfo = {
-    id: number,
-    email: string,
-    pseudonym: string,
-    token: string
-}
+    id: number;
+    email: string;
+    pseudonym: string;
+    token: string;
+};
 
 type Token = {
-    token: string
-}
+    token: string;
+};
+
+type WishlistGame = {
+    igdbId: number;
+    name: string;
+    slug: string;
+    cover: string;
+};
+
 class GamerboxApi {
     static async getGame(id: string | undefined) {
         const url = `https://127.0.0.1:8000/api/game/${id}`;
@@ -55,7 +62,11 @@ class GamerboxApi {
         }
     }
 
-    static async searchGames(value: string | undefined, offset: number | undefined, limit: number | undefined) {
+    static async searchGames(
+        value: string | undefined,
+        offset: number | undefined,
+        limit: number | undefined
+    ) {
         const url = `https://127.0.0.1:8000/api/search`;
         const data = {
             search: value,
@@ -96,7 +107,7 @@ class GamerboxApi {
             const response = await fetch(url, {
                 method: "POST",
                 headers: {
-                    'Content-Type': "application/json",
+                    "Content-Type": "application/json",
                 },
                 body: JSON.stringify(data),
             });
@@ -114,17 +125,41 @@ class GamerboxApi {
         }
     }
 
-    static async getUserInfo(token: string) {
-        const url = `https://127.0.0.1:8000/api/user`;
+    static async getLoggedUserInfo(token: string) {
+        const url = `https://127.0.0.1:8000/api/user/logged`;
         const userToken = token;
 
         try {
             const response = await fetch(url, {
                 method: "POST",
                 headers: {
-                    'Content-Type': "application/json",
+                    "Content-Type": "application/json",
                     Authorization: `Bearer ${userToken}`,
-                }
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const data: UserInfo = await response.json();
+
+            return data;
+        } catch (error) {
+            console.error("Error fetching user:", error);
+            return null;
+        }
+    }
+
+    static async getUserInfo(id: number) {
+        const url = `https://127.0.0.1:8000/api/user/${id}`;
+
+        try {
+            const response = await fetch(url, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
             });
 
             if (!response.ok) {
@@ -147,9 +182,9 @@ class GamerboxApi {
             const response = await fetch(url, {
                 method: "POST",
                 headers: {
-                    'Content-Type': "application/json",
+                    "Content-Type": "application/json",
                     Authorization: `Bearer ${userToken}`,
-                }
+                },
             });
 
             if (!response.ok) {
@@ -157,6 +192,30 @@ class GamerboxApi {
             }
 
             return true;
+        } catch (error) {
+            console.error("Error fetching user:", error);
+            return null;
+        }
+    }
+
+    static async getUserWishlist(userId: number) {
+        const url = `https://127.0.0.1:8000/api/user/wishlist/${userId}`;
+
+        try {
+            const response = await fetch(url, {
+                method: "GET",
+                headers: {
+                    Accept: "application/json",
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const data: Array<WishlistGame> = await response.json();
+
+            return data;
         } catch (error) {
             console.error("Error fetching user:", error);
             return null;

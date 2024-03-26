@@ -10,7 +10,7 @@ import {
     setToken,
     setConnected,
 } from "../../redux/userSlice";
-import { redirect } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 type Token = {
     token: string
@@ -29,17 +29,18 @@ function LoginForm() {
     const [emailError, setEmailError] = useState("");
     const [passwordError, setPasswordError] = useState("");
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const getUserInfo = async (tokenJWT: string) => {
         try {
-            const res: UserInfo | null = await GamerboxApi.getUserInfo(tokenJWT);
+            const res: UserInfo | null = await GamerboxApi.getLoggedUserInfo(tokenJWT);
 
             if (res) {
                 dispatch(setEmail(res.email));
                 dispatch(setId(res.id));
                 dispatch(setPseudonym(res.pseudonym));
                 dispatch(setConnected());
-                redirect('/')
+                navigate('/');
             }
         } catch (error) {
             console.error(error);

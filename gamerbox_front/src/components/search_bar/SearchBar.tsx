@@ -1,20 +1,13 @@
 /// <reference types="node" />
 
-import { useEffect, useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import "./SearchBar.css";
 import GamerboxApi from "../../services/gamerbox_api";
 import Thumbnail from "../thumbnail/Thumbnail";
 import DateFormater from "../../services/dateFormater";
 import ImageModifier from "../../services/imageModifier";
-import noCover from "../../assets/chatpote.jpg";
-import { Link } from "react-router-dom";
-
-type searchResults = {
-    visible: boolean;
-    data: Array<ThumbnailType> | null | undefined;
-    input: string;
-    setSearchBarVisible: (isVisible: boolean) => void;
-};
+import noCoverA from "../../assets/chatpote.jpg";
 
 type ThumbnailType = {
     igdbId: number;
@@ -23,12 +16,65 @@ type ThumbnailType = {
     releaseDate: string;
 };
 
-function SearchBar() {
+type SearchResultsProps = {
+    visible: boolean;
+    data: ThumbnailType[] | null | undefined;
+    input: string;
+    setSearchBarVisible: (isVisible: boolean) => void;
+};
+
+const SearchResults = (props: SearchResultsProps) => {
+    const noCover: string = noCoverA; // Mettez ici votre valeur par défaut pour pas de couverture
+
+    if (!props.visible || !props.data) {
+        return <div className="searchResults noDisplay"></div>;
+    }
+
+    return (
+        <div className="searchResults display">
+            <div>
+                <p>Results :</p>
+            </div>
+            {props.data.map((thumbnail: ThumbnailType) => (
+                <button
+                    key={`${thumbnail.name}-${thumbnail.igdbId}`}
+                    className="nostyle"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        props.setSearchBarVisible(false);
+                    }}
+                >
+                    <Link to={`/game/${thumbnail.igdbId}`}>
+                        <Thumbnail
+                            name={thumbnail.name}
+                            cover={
+                                thumbnail.cover
+                                    ? ImageModifier.replaceThumbWith1080p(
+                                          thumbnail.cover
+                                      )
+                                    : noCover
+                            }
+                            releaseDate={DateFormater.formatFrenchDate(
+                                thumbnail.releaseDate
+                            )}
+                        />
+                    </Link>
+                </button>
+            ))}
+            <div>
+                <Link to={`/search/${props.input}`}>
+                    <p>See more</p>
+                </Link>
+            </div>
+        </div>
+    );
+};
+
+const SearchBar = () => {
     const [input, setInput] = useState<string>("");
-    const offset: number = 0;
-    const limit: number = 5;
     const [data, setData] = useState<ThumbnailType[] | null>();
     const [visible, setVisible] = useState<boolean>(false);
+    const searchBarRef = useRef<HTMLDivElement>(null);
 
     function changeInputValue(value: string) {
         if (value.length > 3) {
@@ -39,10 +85,6 @@ function SearchBar() {
         }
     }
 
-    function setSearchBarVisible(isVisible: boolean) {
-        setVisible(isVisible);
-    }
-
     useEffect(() => {
         let timeoutId: NodeJS.Timeout | undefined;
 
@@ -50,18 +92,16 @@ function SearchBar() {
             try {
                 const thumbnails = await GamerboxApi.searchGames(
                     input,
-                    offset,
-                    limit
+                    0, // offset
+                    5 // limit
                 );
                 setData(thumbnails);
-                console.log(thumbnails);
             } catch (error) {
                 console.error(error);
             }
         };
 
         if (input && input.length >= 3) {
-            // Annuler le timeout existant s'il y en a un
             clearTimeout(timeoutId);
 
             timeoutId = setTimeout(() => {
@@ -69,14 +109,30 @@ function SearchBar() {
             }, 500);
         }
 
-        // Nettoyer le timeout lorsqu'un nouveau rendu se produit ou lorsque le composant est démonté
         return () => {
             clearTimeout(timeoutId);
         };
     }, [input]);
 
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                searchBarRef.current &&
+                !searchBarRef.current.contains(event.target as Node)
+            ) {
+                setVisible(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
     return (
-        <div className="searchBar">
+        <div className="searchBar" ref={searchBarRef}>
             <input
                 type="text"
                 id="searchBar"
@@ -88,56 +144,10 @@ function SearchBar() {
                 visible={visible}
                 data={data}
                 input={input}
-                setSearchBarVisible={setSearchBarVisible}
+                setSearchBarVisible={setVisible}
             />
         </div>
     );
-}
-
-function SearchResults(props: searchResults) {
-    if (props.visible === false) {
-        return <div className="searchResults noDisplay"></div>;
-    } else {
-        return (
-            <div className="searchResults display">
-                <div>
-                    <p>Results :</p>
-                </div>
-                {props.data?.map((thumbnail: any) => (
-                    <button
-                        key={`${thumbnail.name}-${thumbnail.igdbId}`}
-                        className="nostyle"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            props.setSearchBarVisible(false);
-                        }}
-                    >
-                        <Link to={`/game/${thumbnail.igdbId}`}>
-                            <Thumbnail
-                                
-                                name={thumbnail.name}
-                                cover={
-                                    thumbnail.cover
-                                        ? ImageModifier.replaceThumbWith1080p(
-                                              thumbnail.cover
-                                          )
-                                        : noCover
-                                }
-                                releaseDate={DateFormater.formatFrenchDate(
-                                    thumbnail.releaseDate
-                                )}
-                            />
-                        </Link>
-                    </button>
-                ))}
-                <div>
-                    <Link to={`/search/${props.input}`}>
-                        <p>See more</p>
-                    </Link>
-                </div>
-            </div>
-        );
-    }
-}
+};
 
 export default SearchBar;

@@ -16,6 +16,7 @@ import noCover from "../../assets/img_not_available.jpg";
 import noBanner from "../../assets/gamerbox_img.png";
 import { selectIsConnected, selectToken } from "../../redux/userSlice";
 import { useSelector } from "react-redux";
+import AlertModal from "../../components/alert_modal/AlertModal";
 
 type GameInfo = {
     igdbId: number;
@@ -43,21 +44,38 @@ function GamePage() {
     const [releaseDate, setReleaseDate] = useState<string>();
     const [developers, setDevelopers] = useState<string>();
     const [name, setName] = useState<string>();
-    const [token, setToken] = useState<string>(useSelector(selectToken));
-    const [isConnected, setIsConnected] = useState<boolean>(useSelector(selectIsConnected));
-
+    const token = useSelector(selectToken);
+    const isConnected = useSelector(selectIsConnected);
+    const [connexionModal, setConnexionModal] = useState(false);
+    const [successModal, setSuccessModal] = useState(false);
 
     const addWishlist = async () => {
-        if (token.length > 0 && isConnected && game) {
+        if (token && isConnected && game) {
             const res = await GamerboxApi.addToWishlist(game.igdbId, token);
             if(res) {
-                console.log('youpi')
-            } else {
-                console.log('fail??')
+                displaySuccessModal();
             }
+        } else {
+            displayConnexionModal();
         }
         
     };
+
+    function displayConnexionModal() {
+        setConnexionModal(true);
+    }
+
+    function hideConnexionModal() {
+        setConnexionModal(false);
+    }
+
+    function displaySuccessModal() {
+        setSuccessModal(true);
+    }
+
+    function hideSuccessModal() {
+        setSuccessModal(false);
+    }
 
     useEffect(() => {
         const fetchData = async () => {
@@ -94,6 +112,8 @@ function GamePage() {
         <div>
             <Header />
             <main>
+                <AlertModal message="⚠️ Login required to perform this action ⚠️" visible={connexionModal} onClose={hideConnexionModal} />
+                <AlertModal message="Successfully added to your wishlist 😎" visible={successModal} onClose={hideSuccessModal} />
                 <section className="game-top">
                     <section className="game-top-banner">
                         <img src={banner} alt="game banner"></img>

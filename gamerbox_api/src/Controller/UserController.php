@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Repository\UserRepository;
 use App\Repository\WishlistRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -60,9 +61,23 @@ class UserController extends AbstractController
         return new JsonResponse($serializedWishlist, Response::HTTP_CREATED, [], true);
     }
 
-    #[Route('/api/user', name: 'api_user_info', methods: ['POST'])]
+    #[Route('/api/user/{id}', name: 'api_user_info', methods: ['GET'])]
+    public function getUserInfo(int $id, SerializerInterface $serializer, UserRepository $userRepository): JsonResponse
+    {
+        $user = $userRepository->findOneById($id);
+
+        $context = (new ObjectNormalizerContextBuilder())
+            ->withGroups('user_info')
+            ->toArray();
+
+        $serializedWishlist = $serializer->serialize($user, 'json', $context);
+
+        return new JsonResponse($serializedWishlist, Response::HTTP_CREATED, [], true);
+    }
+
+    #[Route('/api/user/logged', name: 'api_logged_user_info', methods: ['POST'])]
     #[IsGranted('ROLE_USER')]
-    public function getUserInfo(SerializerInterface $serializer): JsonResponse
+    public function getLoggedUserInfo(SerializerInterface $serializer): JsonResponse
     {
         $user = $this->getUser();
 
