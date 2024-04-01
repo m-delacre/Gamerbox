@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import Header from "../../components/header/Header";
 import "./Profile.css";
 import GamerboxApi from "../../services/gamerbox_api";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import ImageModifier from "../../services/imageModifier";
 import noBanner from "../../assets/limbowallpaper.jpg";
 import noProfilePic from "../../assets/user_divers.png";
+import { useSelector } from "react-redux";
+import { selectIsConnected, selectUserId } from "../../redux/userSlice";
 
 type UserInfo = {
     id: number;
@@ -21,6 +23,27 @@ type WishlistGame = {
     cover: string | null;
 };
 
+type FollowUser = {
+    id: number;
+    pseudonyme: string;
+};
+
+type BtnVisibility = 0 | 1 | 2;
+
+interface BtnFollowProps {
+    visibility: BtnVisibility;
+}
+
+function BtnFollow({visibility}: BtnFollowProps) {
+    if (visibility === 0) {
+        return <button>Follow</button>;
+    } else if (visibility === 1) {
+        return <p className="profile-top-info-no-btn">Followed ✅</p>;
+    } else {
+        return <></>
+    }
+}
+
 export default function Profile() {
     const { userId } = useParams();
     const [userInfo, setUserInfo] = useState<UserInfo | null>();
@@ -28,7 +51,14 @@ export default function Profile() {
     const [userNum, setUserNum] = useState<number | null>();
     const [userMail, setUserMail] = useState<string | null>();
     const [wishlist, setWishlist] = useState<Array<WishlistGame> | null>();
-    const [gamesNumber, setGamesNumber] = useState<number>(0);
+    const [reviewNumber, setReviewNumber] = useState<number>(10);
+    const [followNumber, setFollowNumber] = useState<number>(0);
+    const [followerNumber, setFollowerNumber] = useState<number>(0);
+    const [followerList, setFollowerList] =
+        useState<Array<FollowUser | null>>();
+    const [btnFollowVisible, setBtnFollowVisible] = useState<BtnVisibility>(0);
+    const connectedUserId = useSelector(selectUserId);
+    const userIsConnected = useSelector<boolean>(selectIsConnected);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -54,14 +84,55 @@ export default function Profile() {
                             lastWishedGame.push(wishlistData[i]);
                         }
                     }
-                    setGamesNumber(wishlistData.length);
                 }
                 setWishlist(lastWishedGame);
             }
         };
 
+        const fetchFollowData = async () => {
+            if (userId) {
+                const userFollowList: Array<FollowUser> | null =
+                    await GamerboxApi.getUserFollowing(parseInt(userId));
+                if (userFollowList) {
+                    setFollowNumber(userFollowList.length);
+                }
+            }
+        };
+
+        const fetchFollowerData = async () => {
+            if (userId) {
+                const userFollowerList: Array<FollowUser> | null =
+                    await GamerboxApi.getUserFollowers(parseInt(userId));
+                if (userIsConnected) {
+                    if (parseInt(userId) === connectedUserId) {
+                        setBtnFollowVisible(2);
+                    } else {
+                        const connectedUserFollowerList: Array<FollowUser> | null =
+                            await GamerboxApi.getUserFollowing(connectedUserId);
+                        if (connectedUserFollowerList) {
+                            const userIsFollowed =
+                                connectedUserFollowerList.find(
+                                    (user) => user.id === parseInt(userId)
+                                );
+                            if (userIsFollowed === undefined) {
+                                setBtnFollowVisible(0);
+                            } else {
+                                setBtnFollowVisible(1);
+                            }
+                        }
+                    }
+                }
+                if (userFollowerList) {
+                    setFollowerList(userFollowerList);
+                    setFollowerNumber(userFollowerList.length);
+                }
+            }
+        };
+
         fetchUserData().catch(console.error);
         fetchWishlist().catch(console.error);
+        fetchFollowData().catch(console.error);
+        fetchFollowerData().catch(console.error);
     }, [userId]);
 
     return (
@@ -77,29 +148,34 @@ export default function Profile() {
                                 <h2>{username}</h2>
                             </div>
                             <div className="profile-top-info-data">
-                                <div className="profile-top-info-data-numbers">
-                                    <p>{gamesNumber}</p>
-                                    <p>Game</p>
+                                <div className="profile-top-info-data-top">
+                                    <div className="profile-top-info-data-numbers">
+                                        <p>{reviewNumber}</p>
+                                        <p>Reviews</p>
+                                    </div>
+                                    <div className="profile-top-info-data-numbers">
+                                        <p>{followNumber}</p>
+                                        <p>Follow</p>
+                                    </div>
+                                    <div className="profile-top-info-data-numbers">
+                                        <p>{followerNumber}</p>
+                                        <p>Followers</p>
+                                    </div>
                                 </div>
-                                <div className="profile-top-info-data-numbers">
-                                    <p>{gamesNumber}</p>
-                                    <p>Follow</p>
-                                </div>
-                                <div className="profile-top-info-data-numbers">
-                                    <p>{gamesNumber}</p>
-                                    <p>Followers</p>
-                                </div>
+                                <BtnFollow visibility={btnFollowVisible} />
                             </div>
                         </div>
                     </div>
                 </section>
                 <section className="profile-bottom">
                     <h4>Wishlist:</h4>
+                    <Link to={`/wishlist/${userInfo?.id}`} id="profile-bottom-wishlistbtn">See more</Link>
                     <div className="wishlist">
                         {wishlist?.map((game: WishlistGame) => (
-                            <div
-                                key={`${game.name}-${game.igdbId}`}
+                            <Link
+                                to={`/game/${game.igdbId}`}
                                 className="wishlistGame"
+                                key={`${game.name}-${game.igdbId}`}
                             >
                                 {game.cover != null ? (
                                     <img
@@ -110,7 +186,7 @@ export default function Profile() {
                                 ) : (
                                     <img src={noProfilePic} />
                                 )}
-                            </div>
+                            </Link>
                         ))}
                     </div>
                 </section>

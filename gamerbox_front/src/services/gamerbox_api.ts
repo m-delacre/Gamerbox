@@ -37,6 +37,11 @@ type WishlistGame = {
     cover: string;
 };
 
+type FollowUser = {
+    id: number,
+    pseudonyme: string
+}
+
 class GamerboxApi {
     static async getGame(id: string | undefined) {
         const url = `https://127.0.0.1:8000/api/game/${id}`;
@@ -214,6 +219,54 @@ class GamerboxApi {
             }
 
             const data: Array<WishlistGame> = await response.json();
+
+            return data;
+        } catch (error) {
+            console.error("Error fetching user:", error);
+            return null;
+        }
+    }
+
+    static async getUserFollowing(userId: number) {
+        const url = `https://127.0.0.1:8000/api/user/follow/${userId}`;
+
+        try {
+            const response = await fetch(url, {
+                method: "GET",
+                headers: {
+                    Accept: "application/json",
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const data: Array<FollowUser> = await response.json();
+
+            return data;
+        } catch (error) {
+            console.error("Error fetching user:", error);
+            return null;
+        }
+    }
+
+    static async getUserFollowers(userId: number) {
+        const url = `https://127.0.0.1:8000/api/user/follower/${userId}`;
+
+        try {
+            const response = await fetch(url, {
+                method: "GET",
+                headers: {
+                    Accept: "application/json",
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const data: Array<FollowUser> = await response.json();
 
             return data;
         } catch (error) {

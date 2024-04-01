@@ -89,4 +89,42 @@ class UserController extends AbstractController
 
         return new JsonResponse($serializedWishlist, Response::HTTP_CREATED, [], true);
     }
+
+    #[Route('/api/user/follow/{id}', name: 'api_user_follow', methods: ['GET'])]
+    public function getUserFollowList(User $user, SerializerInterface $serializer): JsonResponse
+    {
+        $follows = $user->getFollowing();
+        $followingUsers = [];
+
+        foreach ($follows as $follow) {
+            $followingUsers[] = $follow->getFollowed();
+        }
+
+        $context = (new ObjectNormalizerContextBuilder())
+            ->withGroups('user_follower')
+            ->toArray();
+
+        $serializedFollowingList = $serializer->serialize($followingUsers, 'json', $context);
+
+        return new JsonResponse($serializedFollowingList, Response::HTTP_CREATED, [], true);
+    }
+
+    #[Route('/api/user/follower/{id}', name: 'api_user_follower', methods: ['GET'])]
+    public function getUserFollowerList(User $user, SerializerInterface $serializer): JsonResponse
+    {
+        $follows = $user->getFollowers();
+        $followerUsers = [];
+
+        foreach ($follows as $follow) {
+            $followerUsers[] = $follow->getFollower();
+        }
+
+        $context = (new ObjectNormalizerContextBuilder())
+            ->withGroups('user_follower')
+            ->toArray();
+
+        $serializedFollowingList = $serializer->serialize($followerUsers, 'json', $context);
+
+        return new JsonResponse($serializedFollowingList, Response::HTTP_CREATED, [], true);
+    }
 }

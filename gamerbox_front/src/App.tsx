@@ -7,6 +7,8 @@ import SearchPage from "./pages/search_page/SearchPage.tsx";
 import LoginPage from "./pages/login_page/LoginPage.tsx";
 import Home from "./pages/home/Home.tsx";
 import Profile from "./pages/user_profile/Profile.tsx";
+import WishlistPage from "./pages/wishlist_page/WishlistPage.tsx";
+import GameNotFound from "./pages/gamenotfound/GameNotFound.tsx";
 
 const router = createBrowserRouter([
     {
@@ -31,6 +33,14 @@ const router = createBrowserRouter([
     {
         path: "/profile/:userId",
         element: <Profile />,
+    },
+    {
+        path: "/wishlist/:userId",
+        element: <WishlistPage />,
+    },
+    {
+        path: "/gamenotfound",
+        element: <GameNotFound />,
     },
     {
         path: "/error",

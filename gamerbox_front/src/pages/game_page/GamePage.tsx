@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import GamerboxApi from "../../services/gamerbox_api";
 import ImageModifier from "../../services/imageModifier";
@@ -48,6 +48,7 @@ function GamePage() {
     const isConnected = useSelector(selectIsConnected);
     const [connexionModal, setConnexionModal] = useState(false);
     const [successModal, setSuccessModal] = useState(false);
+    const navigate = useNavigate();
 
     const addWishlist = async () => {
         if (token && isConnected && game) {
@@ -105,7 +106,7 @@ function GamePage() {
     }, [gameId]);
 
     if (game === null) {
-        return <div>Loading...</div>;
+        navigate('/gamenotfound');
     }
 
     return (

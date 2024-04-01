@@ -145,9 +145,15 @@
 
 .wishListBtn {
     border: 2px solid white;
-    background: #b000bf;
-    color: white;
+    background: #11112f;
+    color: #24FF00;
     width: fit-content;
     height: fit-content;
     padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 20px;
+}
+
+.wishListBtn:hover{
+    cursor: pointer;
 }

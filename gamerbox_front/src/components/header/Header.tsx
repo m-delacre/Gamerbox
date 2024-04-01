@@ -40,7 +40,6 @@ function Header() {
                     <SearchBar />
                 </div>
                 <Link to={`/profile/${userId}`}>Profile</Link>
-                {/* <button onClick={goToProfile}>Profile</button> */}
                 <Link to='' onClick={disconnect}>Disconnect</Link>
             </header>
         );

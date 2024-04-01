@@ -53,10 +53,53 @@
 
 .profile-top-info-picture h2 {
     font-size: 25px;
-    color: white;
+    color: #24FF00;
 }
 
 .profile-top-info-data {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 70%;
+    height: 100%;
+    gap: 40px;
+    position: relative;
+}
+
+.profile-top-info-data button {
+    position: absolute;
+    bottom: 50px;
+    left: 50px;
+    width: fit-content;
+    height: fit-content;
+    padding: 10px 20px;
+    border: 2px solid white;
+    border-radius: 20px;
+    background-color: #11112f;
+    color: #24FF00;
+    font-size: 20px;
+}
+
+.profile-top-info-no-btn {
+    position: absolute;
+    bottom: 50px;
+    left: 50px;
+    width: fit-content;
+    height: fit-content;
+    padding: 10px 20px;
+    border: 2px solid white;
+    border-radius: 20px;
+    background-color: #11112f;
+    color: #24FF00;
+    font-size: 20px;
+}
+
+.profile-top-info-btn-friend button:hover {
+    cursor: pointer;
+}
+
+.profile-top-info-data-top {
     display: flex;
     flex-direction: row;
     justify-content: center;
@@ -89,11 +132,27 @@
 .profile-bottom{
     width: 1000px;
     height: fit-content;
+    position: relative;
+}
+
+#profile-bottom-wishlistbtn{
+    position: absolute;
+    top: 40px;
+    right: 0;
+    width: fit-content;
+    height: fit-content;
+    padding: 10px 20px;
+    border: 2px solid white;
+    border-radius: 30px;
+    background-color: #11112f;
+    color: #24FF00;
+    font-size: 15px;
 }
 
 .profile-bottom h4 {
     font-size: 25px;
     color: #b000bf;
+    padding-bottom: 30px;
     border-bottom: 2px solid #b000bf;
 }
 
@@ -111,7 +170,7 @@
 
 .wishlistGame {
     width: 25%;
-    height: 300px;
+    height: 350px;
     display: block;
 }
 

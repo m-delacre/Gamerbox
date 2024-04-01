@@ -1,7 +1,7 @@
 /// <reference types="node" />
 
 import { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import "./SearchBar.css";
 import GamerboxApi from "../../services/gamerbox_api";
 import Thumbnail from "../thumbnail/Thumbnail";
