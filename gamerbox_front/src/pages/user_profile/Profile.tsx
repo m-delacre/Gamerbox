@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import Header from "../../components/header/Header";
 import "./Profile.css";
-import GamerboxApi from "../../services/gamerbox_api";
 import { Link, useParams } from "react-router-dom";
 import ImageModifier from "../../services/imageModifier";
 import noBanner from "../../assets/limbowallpaper.jpg";
 import noProfilePic from "../../assets/user_divers.png";
 import { useSelector } from "react-redux";
 import { selectIsConnected, selectUserId } from "../../redux/userSlice";
+import useFetch from "../../services/useFetch";
 
 type UserInfo = {
     id: number;
@@ -23,24 +23,181 @@ type WishlistGame = {
     cover: string | null;
 };
 
+type BtnFollowProps = {
+    pageUserId: number | undefined;
+};
 type FollowUser = {
     id: number;
-    pseudonyme: string;
+    pseudonym: string;
 };
+function BtnFollow({ pageUserId }: BtnFollowProps) {
+    const checkConnection = useSelector(selectIsConnected);
+    let connectedUserId: number | null = useSelector(selectUserId);
+    const [connectedUserFollowList, setConnectedUserFollowList] =
+        useState<Array<FollowUser> | null>();
+    const { data, loading, error } = useFetch(
+        `https://127.0.0.1:8000/api/user/follow/${connectedUserId}`,
+        "GET"
+    );
 
-type BtnVisibility = 0 | 1 | 2;
+    if (error) {
+        console.error(error);
+    }
 
-interface BtnFollowProps {
-    visibility: BtnVisibility;
+    useEffect(() => {
+        setConnectedUserFollowList(data);
+    }, [pageUserId, data]);
+
+    if (loading) {
+        return (
+            <div className="profile-top-info-data-numbers">
+                <div className="loader2"></div>
+            </div>
+        );
+    }
+
+    if (pageUserId && checkConnection && connectedUserFollowList) {
+        if (pageUserId !== connectedUserId) {
+            const finder = connectedUserFollowList.find(
+                (user) => user.id === pageUserId
+            );
+            if (finder) {
+                return <button>Followed ✅</button>;
+            } else {
+                return <button>Follow</button>;
+            }
+        }
+    } else {
+        return <></>;
+    }
 }
 
-function BtnFollow({visibility}: BtnFollowProps) {
-    if (visibility === 0) {
-        return <button>Follow</button>;
-    } else if (visibility === 1) {
-        return <p className="profile-top-info-no-btn">Followed ✅</p>;
-    } else {
-        return <></>
+interface UserDataProps {
+    userId: string | undefined;
+}
+function FollowData({ userId }: UserDataProps) {
+    const [follow, setFollow] = useState([]);
+    const { data, loading, error } = useFetch(
+        `https://127.0.0.1:8000/api/user/follow/${userId}`,
+        "GET"
+    );
+
+    useEffect(() => {
+        if (data) {
+            setFollow(data);
+        }
+    }, [userId, data]);
+
+    if (error) {
+        console.error(error);
+    }
+
+    if (loading) {
+        return (
+            <div className="profile-top-info-data-numbers">
+                <div className="loader"></div>
+            </div>
+        );
+    }
+
+    if (data) {
+        return (
+            <div className="profile-top-info-data-numbers">
+                <p>{follow.length}</p>
+                <p>Follow</p>
+            </div>
+        );
+    }
+}
+
+function FollowerData({ userId }: UserDataProps) {
+    const [follower, setFollower] = useState([]);
+    const { data, loading, error } = useFetch(
+        `https://127.0.0.1:8000/api/user/follower/${userId}`,
+        "GET"
+    );
+
+    useEffect(() => {
+        if (data) {
+            setFollower(data);
+        }
+    }, [userId, data]);
+
+    if (error) {
+        console.error(error);
+    }
+
+    if (loading) {
+        return (
+            <div className="profile-top-info-data-numbers">
+                <div className="loader"></div>
+            </div>
+        );
+    }
+
+    if (follower) {
+        return (
+            <div className="profile-top-info-data-numbers">
+                <p>{follower.length}</p>
+                <p>Followers</p>
+            </div>
+        );
+    }
+}
+
+function WishlistSection({ userId }: UserDataProps) {
+    const [wishlist, setWishlist] = useState<Array<WishlistGame>>();
+    const { data, loading, error } = useFetch(
+        `https://127.0.0.1:8000/api/user/wishlist/${userId}`,
+        "GET"
+    );
+
+    useEffect(() => {
+        if (data) {
+            let lastWishedGame = [];
+            for (let i = 0; i < 4; i++) {
+                if (data[i]) {
+                    lastWishedGame.push(data[i]);
+                }
+            }
+            setWishlist(lastWishedGame);
+        }
+    }, [userId, data]);
+
+    if (error) {
+        console.log(error);
+    }
+
+    if (loading) {
+        return (
+            <div className="profile-top-info-data-numbers">
+                <div className="loader"></div>
+            </div>
+        );
+    }
+
+    if (wishlist) {
+        return (
+            <div className="wishlist">
+                {wishlist.map((game: WishlistGame) => (
+                    <Link
+                        to={`/game/${game.igdbId}`}
+                        className="wishlistGame"
+                        key={`${game.name}-${game.igdbId}`}
+                    >
+                        {game.cover != null ? (
+                            <img
+                                src={ImageModifier.replaceThumbWith1080p(
+                                    game.cover
+                                )}
+                            />
+                        ) : (
+                            <img src={noProfilePic} />
+                        )}
+                    </Link>
+                ))}
+            </div>
+        );
     }
 }
 
@@ -48,92 +205,30 @@ export default function Profile() {
     const { userId } = useParams();
     const [userInfo, setUserInfo] = useState<UserInfo | null>();
     const [username, setUsername] = useState<string | null>();
-    const [userNum, setUserNum] = useState<number | null>();
-    const [userMail, setUserMail] = useState<string | null>();
-    const [wishlist, setWishlist] = useState<Array<WishlistGame> | null>();
-    const [reviewNumber, setReviewNumber] = useState<number>(10);
-    const [followNumber, setFollowNumber] = useState<number>(0);
-    const [followerNumber, setFollowerNumber] = useState<number>(0);
-    const [followerList, setFollowerList] =
-        useState<Array<FollowUser | null>>();
-    const [btnFollowVisible, setBtnFollowVisible] = useState<BtnVisibility>(0);
-    const connectedUserId = useSelector(selectUserId);
-    const userIsConnected = useSelector<boolean>(selectIsConnected);
+    const reviewNumber = 10;
+    const { data, loading, error } = useFetch(
+        `https://127.0.0.1:8000/api/user/${userId}`,
+        "GET"
+    );
+
+    if (error) {
+        console.error(error);
+    }
 
     useEffect(() => {
-        const fetchUserData = async () => {
-            if (userId) {
-                const userData: UserInfo | null = await GamerboxApi.getUserInfo(
-                    parseInt(userId)
-                );
-                setUserInfo(userData);
-                setUsername(userData?.pseudonym);
-                setUserNum(userData?.id);
-                setUserMail(userData?.email);
-            }
-        };
+        if (data) {
+            setUserInfo(data);
+            setUsername(data.pseudonym);
+        }
+    }, [userId, data]);
 
-        const fetchWishlist = async () => {
-            if (userId) {
-                const wishlistData: Array<WishlistGame> | null =
-                    await GamerboxApi.getUserWishlist(parseInt(userId));
-                let lastWishedGame = [];
-                if (wishlistData) {
-                    for (let i = 0; i < 4; i++) {
-                        if (wishlistData[i]) {
-                            lastWishedGame.push(wishlistData[i]);
-                        }
-                    }
-                }
-                setWishlist(lastWishedGame);
-            }
-        };
-
-        const fetchFollowData = async () => {
-            if (userId) {
-                const userFollowList: Array<FollowUser> | null =
-                    await GamerboxApi.getUserFollowing(parseInt(userId));
-                if (userFollowList) {
-                    setFollowNumber(userFollowList.length);
-                }
-            }
-        };
-
-        const fetchFollowerData = async () => {
-            if (userId) {
-                const userFollowerList: Array<FollowUser> | null =
-                    await GamerboxApi.getUserFollowers(parseInt(userId));
-                if (userIsConnected) {
-                    if (parseInt(userId) === connectedUserId) {
-                        setBtnFollowVisible(2);
-                    } else {
-                        const connectedUserFollowerList: Array<FollowUser> | null =
-                            await GamerboxApi.getUserFollowing(connectedUserId);
-                        if (connectedUserFollowerList) {
-                            const userIsFollowed =
-                                connectedUserFollowerList.find(
-                                    (user) => user.id === parseInt(userId)
-                                );
-                            if (userIsFollowed === undefined) {
-                                setBtnFollowVisible(0);
-                            } else {
-                                setBtnFollowVisible(1);
-                            }
-                        }
-                    }
-                }
-                if (userFollowerList) {
-                    setFollowerList(userFollowerList);
-                    setFollowerNumber(userFollowerList.length);
-                }
-            }
-        };
-
-        fetchUserData().catch(console.error);
-        fetchWishlist().catch(console.error);
-        fetchFollowData().catch(console.error);
-        fetchFollowerData().catch(console.error);
-    }, [userId]);
+    if (loading) {
+        return (
+            <div className="loading-page">
+                <div className="loader2"></div>
+            </div>
+        );
+    }
 
     return (
         <div>
@@ -153,42 +248,27 @@ export default function Profile() {
                                         <p>{reviewNumber}</p>
                                         <p>Reviews</p>
                                     </div>
-                                    <div className="profile-top-info-data-numbers">
-                                        <p>{followNumber}</p>
-                                        <p>Follow</p>
-                                    </div>
-                                    <div className="profile-top-info-data-numbers">
-                                        <p>{followerNumber}</p>
-                                        <p>Followers</p>
-                                    </div>
+                                    <FollowData userId={userId} />
+                                    <FollowerData userId={userId} />
                                 </div>
-                                <BtnFollow visibility={btnFollowVisible} />
+                                {userId ? (
+                                    <BtnFollow pageUserId={parseInt(userId)} />
+                                ) : (
+                                    <></>
+                                )}
                             </div>
                         </div>
                     </div>
                 </section>
                 <section className="profile-bottom">
                     <h4>Wishlist:</h4>
-                    <Link to={`/wishlist/${userInfo?.id}`} id="profile-bottom-wishlistbtn">See more</Link>
-                    <div className="wishlist">
-                        {wishlist?.map((game: WishlistGame) => (
-                            <Link
-                                to={`/game/${game.igdbId}`}
-                                className="wishlistGame"
-                                key={`${game.name}-${game.igdbId}`}
-                            >
-                                {game.cover != null ? (
-                                    <img
-                                        src={ImageModifier.replaceThumbWith1080p(
-                                            game.cover
-                                        )}
-                                    />
-                                ) : (
-                                    <img src={noProfilePic} />
-                                )}
-                            </Link>
-                        ))}
-                    </div>
+                    <Link
+                        to={`/wishlist/${userInfo?.id}`}
+                        id="profile-bottom-wishlistbtn"
+                    >
+                        See more
+                    </Link>
+                    <WishlistSection userId={userId} />
                 </section>
             </main>
         </div>

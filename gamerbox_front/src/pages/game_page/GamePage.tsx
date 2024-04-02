@@ -1,6 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import GamerboxApi from "../../services/gamerbox_api";
 import ImageModifier from "../../services/imageModifier";
 import DateFormater from "../../services/dateFormater";
 import TagPills from "../../components/tag_pills/TagPills";
@@ -14,9 +13,10 @@ import pictureDivers from "../../assets/user_divers.png";
 import pictureChat from "../../assets/chatpote.jpg";
 import noCover from "../../assets/img_not_available.jpg";
 import noBanner from "../../assets/gamerbox_img.png";
-import { selectIsConnected, selectToken } from "../../redux/userSlice";
+import { selectToken, selectUserId } from "../../redux/userSlice";
 import { useSelector } from "react-redux";
-import AlertModal from "../../components/alert_modal/AlertModal";
+import useFetch from "../../services/useFetch";
+import useSendData from "../../services/useSendFetch";
 
 type GameInfo = {
     igdbId: number;
@@ -44,77 +44,52 @@ function GamePage() {
     const [releaseDate, setReleaseDate] = useState<string>();
     const [developers, setDevelopers] = useState<string>();
     const [name, setName] = useState<string>();
-    const token = useSelector(selectToken);
-    const isConnected = useSelector(selectIsConnected);
-    const [connexionModal, setConnexionModal] = useState(false);
-    const [successModal, setSuccessModal] = useState(false);
     const navigate = useNavigate();
 
-    const addWishlist = async () => {
-        if (token && isConnected && game) {
-            const res = await GamerboxApi.addToWishlist(game.igdbId, token);
-            if(res) {
-                displaySuccessModal();
-            }
-        } else {
-            displayConnexionModal();
-        }
-        
-    };
+    const { data, loading, error } = useFetch(
+        `https://127.0.0.1:8000/api/game/${gameId}`,
+        "GET"
+    );
 
-    function displayConnexionModal() {
-        setConnexionModal(true);
-    }
-
-    function hideConnexionModal() {
-        setConnexionModal(false);
-    }
-
-    function displaySuccessModal() {
-        setSuccessModal(true);
-    }
-
-    function hideSuccessModal() {
-        setSuccessModal(false);
+    if (error) {
+        console.error(error);
     }
 
     useEffect(() => {
-        const fetchData = async () => {
-            const gameData = await GamerboxApi.getGame(gameId);
-            setGame(gameData);
-            setName(gameData?.name);
-            if (gameData?.banner != null) {
-                setBanner(
-                    ImageModifier.replaceThumbWithScreenshotHuge(
-                        gameData?.banner
-                    )
-                );
+        if (data) {
+            setGame(data);
+            if (data.banner) {
+                setBanner(data.banner);
             } else {
                 setBanner(noBanner);
             }
-            if (gameData?.cover != null) {
-                setCover(ImageModifier.replaceThumbWith1080p(gameData?.cover));
+            if (data.cover) {
+                setCover(ImageModifier.replaceThumbWith1080p(data.cover));
             } else {
                 setCover(noCover);
             }
-            setReleaseDate(
-                DateFormater.formatFrenchDate(gameData?.releaseDate)
-            );
-            setDevelopers(gameData?.developers);
-        };
-        fetchData().catch(console.error);
-    }, [gameId]);
+            setName(data.name);
+            setDevelopers(data.developers);
+            setReleaseDate(DateFormater.formatFrenchDate(data.releaseDate));
+        }
+    }, [gameId, data]);
 
     if (game === null) {
-        navigate('/gamenotfound');
+        navigate("/gamenotfound");
+    }
+
+    if (loading) {
+        return (
+            <div className="loading-page">
+                <div className="loader2"></div>
+            </div>
+        );
     }
 
     return (
         <div>
             <Header />
             <main>
-                <AlertModal message="⚠️ Login required to perform this action ⚠️" visible={connexionModal} onClose={hideConnexionModal} />
-                <AlertModal message="Successfully added to your wishlist 😎" visible={successModal} onClose={hideSuccessModal} />
                 <section className="game-top">
                     <section className="game-top-banner">
                         <img src={banner} alt="game banner"></img>
@@ -128,12 +103,11 @@ function GamePage() {
                             <h3>
                                 {developers} - {releaseDate}
                             </h3>
-                            <button
-                                className="wishListBtn"
-                                onClick={addWishlist}
-                            >
-                                Add Wishlist
-                            </button>
+                            {gameId ? (
+                                <WishlistBtn gameId={parseInt(gameId)} />
+                            ) : (
+                                <></>
+                            )}
                         </section>
                         <section className="game-top-info-note">
                             <Note note={5} />
@@ -211,6 +185,72 @@ function GamePage() {
             </main>
         </div>
     );
+}
+
+type WishlistBtnProsp = {
+    gameId: number | undefined;
+};
+
+type WishlistGame = {
+    igdbId: number;
+    name: string;
+    slug: string;
+    cover: string | null;
+};
+function WishlistBtn({ gameId }: WishlistBtnProsp) {
+    const token = useSelector(selectToken);
+    const userId = useSelector(selectUserId);
+    const [visible, setVisible] = useState(true);
+    const navigate = useNavigate();
+    const sendingData = useSendData(
+        `https://127.0.0.1:8000/api/game/whishlist/${gameId}`,
+        "POST",
+        token
+    );
+    const { data, loading, error } = useFetch(
+        `https://127.0.0.1:8000/api/user/wishlist/${userId}`,
+        "GET"
+    );
+
+    useEffect(() => {
+        if (data) {
+            const finder = data.find(
+                (game: WishlistGame) => game.igdbId === gameId
+            );
+            if (finder) {
+                setVisible(false);
+            } else {
+                setVisible(true);
+            }
+        }
+    }, [userId, data, visible]);
+
+    const addWishlist = async () => {
+        if (token && userId && gameId) {
+            sendingData;
+        }
+        navigate(0);
+    };
+
+    if (error) {
+        console.log(error);
+    }
+
+    if (loading) {
+        return (
+            <div className="profile-top-info-data-numbers">
+                <div className="loader"></div>
+            </div>
+        );
+    }
+
+    if (visible) {
+        return (
+            <button className="wishListBtn" onClick={addWishlist}>
+                Add Wishlist
+            </button>
+        );
+    }
 }
 
 export default GamePage;

@@ -21,11 +21,21 @@
 .wishlistpage-section h1 {
     color: white;
     border-bottom: 2px solid #b000bf;
+    padding-bottom: 15px;
 }
 
 .wishlistpage-section h1  em{
     color: #24FF00;
     font-style: normal;
+}
+.wishlistpage-section-nogames {
+    width: 100%;
+    height: fit-content;
+    min-height: 70vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
 }
 
 .wishlistpage-section-games {

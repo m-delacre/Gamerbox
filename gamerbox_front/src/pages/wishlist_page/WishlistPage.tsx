@@ -5,6 +5,7 @@ import Header from "../../components/header/Header";
 import ImageModifier from "../../services/imageModifier";
 import noPicture from "../../assets/img_not_available.jpg";
 import "./Wishlistpage.css";
+import useFetch from "../../services/useFetch";
 
 type UserInfo = {
     id: number;
@@ -23,7 +24,6 @@ type WishlistGame = {
 export default function WishlistPage() {
     const { userId } = useParams();
     const [userInfo, setUserInfo] = useState<UserInfo | null>();
-    const [wishlist, setWishlist] = useState<Array<WishlistGame> | null>();
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -35,16 +35,7 @@ export default function WishlistPage() {
             }
         };
 
-        const fetchWishlist = async () => {
-            if (userId) {
-                const wishlistData: Array<WishlistGame> | null =
-                    await GamerboxApi.getUserWishlist(parseInt(userId));
-                setWishlist(wishlistData);
-            }
-        };
-
         fetchUserData().catch(console.error);
-        fetchWishlist().catch(console.error);
     }, [userId]);
 
     return (
@@ -54,29 +45,79 @@ export default function WishlistPage() {
                 <h1>
                     <em>{userInfo?.pseudonym}</em> wishlist <em>:</em>
                 </h1>
-                <div className="wishlistpage-section-games">
-                    {wishlist?.map((game: WishlistGame) => (
-                        <Link
-                            to={`/game/${game.igdbId}`}
-                            className="wishlistpage-section-games-game"
-                            key={`${game.name}-${game.igdbId}`}
-                        >
-                            <div className="wishlistpage-section-games-game-top">
-                                {game.cover != null ? (
-                                    <img
-                                        src={ImageModifier.replaceThumbWith1080p(
-                                            game.cover
-                                        )}
-                                    />
-                                ) : (
-                                    <img src={noPicture} />
-                                )}
-                            </div>
-                            <p className="wishlistpage-section-games-game-title">{game.name}</p>
-                        </Link>
-                    ))}
-                </div>
+                {userId ? <Wishlist pageUserId={parseInt(userId)} /> : <></>}
             </div>
+        </div>
+    );
+}
+
+interface WishlistDataProps {
+    pageUserId: number | undefined;
+}
+
+function Wishlist({ pageUserId }: WishlistDataProps) {
+    const [wishlist, setWishlist] = useState<Array<WishlistGame>>();
+    const { data, loading, error } = useFetch(
+        `https://127.0.0.1:8000/api/user/wishlist/${pageUserId}`,
+        "GET"
+    );
+
+    useEffect(() => {
+        if (data) {
+            let lastWishedGame = [];
+            for (let i = 0; i < 4; i++) {
+                if (data[i]) {
+                    lastWishedGame.push(data[i]);
+                }
+            }
+            setWishlist(lastWishedGame);
+        }
+    }, [pageUserId, data]);
+
+    if (error) {
+        console.log(error);
+    }
+
+    if (loading) {
+        return (
+            <div className="profile-top-info-data-numbers">
+                <div className="loader"></div>
+            </div>
+        );
+    }
+
+    if(!data) {
+        return (
+            <div className="wishlistpage-section-nogames">
+                <p>No wishlist available... 😞</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="wishlistpage-section-games">
+            {wishlist?.map((game: WishlistGame) => (
+                <Link
+                    to={`/game/${game.igdbId}`}
+                    className="wishlistpage-section-games-game"
+                    key={`${game.name}-${game.igdbId}`}
+                >
+                    <div className="wishlistpage-section-games-game-top">
+                        {game.cover != null ? (
+                            <img
+                                src={ImageModifier.replaceThumbWith1080p(
+                                    game.cover
+                                )}
+                            />
+                        ) : (
+                            <img src={noPicture} />
+                        )}
+                    </div>
+                    <p className="wishlistpage-section-games-game-title">
+                        {game.name}
+                    </p>
+                </Link>
+            ))}
         </div>
     );
 }
