@@ -1,13 +1,26 @@
 import Header from "../../components/header/Header";
 import "./Home.css";
 import wallpaper from "../../assets/limbowallpaper.jpg";
-import useFetch from "../../services/useFetch";
+import useSendData from "../../services/useSendFetch";
+import { useDispatch, useSelector } from "react-redux";
+import { selectToken, setNotConnected, setId, setEmail, setToken, setPseudonym } from "../../redux/userSlice";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 function Home() {
-    const { data, loading, error } = useFetch(
-        "https://127.0.0.1:8000/api/game/1904",
-        "GET"
-    );
+    const loading = true;
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    
+    function disconnect() {
+        dispatch(setNotConnected());
+        dispatch(setId(null));
+        dispatch(setEmail(''));
+        dispatch(setPseudonym(''));
+        dispatch(setToken(''));
+        navigate(0);
+    }
+
     return (
         <div className="homepage">
             <Header />
@@ -26,9 +39,6 @@ function Home() {
                 </section>
                 <section className="home-explain">
                         {loading && <div className="loader2"></div>}
-                        {data && <p>"{data.name}"</p>}
-                        {data && <p>"{data.igdbId}"</p>}
-                        {error && <p>{error}</p>}
                 </section>
             </main>
         </div>

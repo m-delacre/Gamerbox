@@ -35,7 +35,7 @@ function BtnFollow({ pageUserId }: BtnFollowProps) {
     let connectedUserId: number | null = useSelector(selectUserId);
     const [connectedUserFollowList, setConnectedUserFollowList] =
         useState<Array<FollowUser> | null>();
-    const { data, loading, error } = useFetch(
+    const { data, loading, error } = useFetch<FollowUser[]>(
         `https://127.0.0.1:8000/api/user/follow/${connectedUserId}`,
         "GET"
     );
@@ -45,7 +45,9 @@ function BtnFollow({ pageUserId }: BtnFollowProps) {
     }
 
     useEffect(() => {
-        setConnectedUserFollowList(data);
+        if(data && checkConnection === true) {
+            setConnectedUserFollowList(data);
+        }
     }, [pageUserId, data]);
 
     if (loading) {
@@ -56,7 +58,7 @@ function BtnFollow({ pageUserId }: BtnFollowProps) {
         );
     }
 
-    if (pageUserId && checkConnection && connectedUserFollowList) {
+    if (pageUserId && checkConnection === true && connectedUserFollowList) {
         if (pageUserId !== connectedUserId) {
             const finder = connectedUserFollowList.find(
                 (user) => user.id === pageUserId
@@ -76,8 +78,8 @@ interface UserDataProps {
     userId: string | undefined;
 }
 function FollowData({ userId }: UserDataProps) {
-    const [follow, setFollow] = useState([]);
-    const { data, loading, error } = useFetch(
+    const [follow, setFollow] = useState<Array<FollowUser>>([]);
+    const { data, loading, error } = useFetch<FollowUser[]>(
         `https://127.0.0.1:8000/api/user/follow/${userId}`,
         "GET"
     );
@@ -111,8 +113,8 @@ function FollowData({ userId }: UserDataProps) {
 }
 
 function FollowerData({ userId }: UserDataProps) {
-    const [follower, setFollower] = useState([]);
-    const { data, loading, error } = useFetch(
+    const [follower, setFollower] = useState<Array<FollowUser>>([]);
+    const { data, loading, error } = useFetch<FollowUser[]>(
         `https://127.0.0.1:8000/api/user/follower/${userId}`,
         "GET"
     );
@@ -147,7 +149,7 @@ function FollowerData({ userId }: UserDataProps) {
 
 function WishlistSection({ userId }: UserDataProps) {
     const [wishlist, setWishlist] = useState<Array<WishlistGame>>();
-    const { data, loading, error } = useFetch(
+    const { data, loading, error } = useFetch<WishlistGame[]>(
         `https://127.0.0.1:8000/api/user/wishlist/${userId}`,
         "GET"
     );
@@ -206,7 +208,7 @@ export default function Profile() {
     const [userInfo, setUserInfo] = useState<UserInfo | null>();
     const [username, setUsername] = useState<string | null>();
     const reviewNumber = 10;
-    const { data, loading, error } = useFetch(
+    const { data, loading, error } = useFetch<UserInfo>(
         `https://127.0.0.1:8000/api/user/${userId}`,
         "GET"
     );

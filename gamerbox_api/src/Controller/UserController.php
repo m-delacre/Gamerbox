@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Entity\Wishlist;
 use App\Repository\UserRepository;
 use App\Repository\WishlistRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -46,8 +47,9 @@ class UserController extends AbstractController
     #[Route('/api/user/wishlist/{id}', name: 'api_user_wishlist', methods: ['GET'])]
     public function getUserWishlist(User $user, WishlistRepository $wishlistRepository, SerializerInterface $serializer): JsonResponse
     {
-        $wishlist = $wishlistRepository->findOneByUser($user);
-
+        // $wishlist = $wishlistRepository->findOneByUser($user);
+        $wishlist = $user->getWishlists()[0];
+        
         if (!$wishlist) {
             return new JsonResponse('pas trouvé', Response::HTTP_NOT_FOUND, [], true);
         }
@@ -55,7 +57,8 @@ class UserController extends AbstractController
         $context = (new ObjectNormalizerContextBuilder())
             ->withGroups('wishlist_game')
             ->toArray();
-
+        //dd($wishlist[0]->getGame()->toArray());
+        //$games = array_reverse($wishlist->getGame()->toArray());
         $serializedWishlist = $serializer->serialize($wishlist->getGame(), 'json', $context);
 
         return new JsonResponse($serializedWishlist, Response::HTTP_CREATED, [], true);

@@ -57,20 +57,14 @@ interface WishlistDataProps {
 
 function Wishlist({ pageUserId }: WishlistDataProps) {
     const [wishlist, setWishlist] = useState<Array<WishlistGame>>();
-    const { data, loading, error } = useFetch(
+    const { data, loading, error } = useFetch<WishlistGame[]>(
         `https://127.0.0.1:8000/api/user/wishlist/${pageUserId}`,
         "GET"
     );
 
     useEffect(() => {
         if (data) {
-            let lastWishedGame = [];
-            for (let i = 0; i < 4; i++) {
-                if (data[i]) {
-                    lastWishedGame.push(data[i]);
-                }
-            }
-            setWishlist(lastWishedGame);
+            setWishlist(data);
         }
     }, [pageUserId, data]);
 

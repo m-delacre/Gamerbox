@@ -16,7 +16,7 @@ import noBanner from "../../assets/gamerbox_img.png";
 import { selectToken, selectUserId } from "../../redux/userSlice";
 import { useSelector } from "react-redux";
 import useFetch from "../../services/useFetch";
-import useSendData from "../../services/useSendFetch";
+import GamerboxApi from "../../services/gamerbox_api";
 
 type GameInfo = {
     igdbId: number;
@@ -44,9 +44,10 @@ function GamePage() {
     const [releaseDate, setReleaseDate] = useState<string>();
     const [developers, setDevelopers] = useState<string>();
     const [name, setName] = useState<string>();
+    const userId = useSelector(selectUserId);
     const navigate = useNavigate();
 
-    const { data, loading, error } = useFetch(
+    const { data, loading, error } = useFetch<GameInfo>(
         `https://127.0.0.1:8000/api/game/${gameId}`,
         "GET"
     );
@@ -103,7 +104,7 @@ function GamePage() {
                             <h3>
                                 {developers} - {releaseDate}
                             </h3>
-                            {gameId ? (
+                            {gameId && userId ? (
                                 <WishlistBtn gameId={parseInt(gameId)} />
                             ) : (
                                 <></>
@@ -200,43 +201,66 @@ type WishlistGame = {
 function WishlistBtn({ gameId }: WishlistBtnProsp) {
     const token = useSelector(selectToken);
     const userId = useSelector(selectUserId);
-    const [visible, setVisible] = useState(true);
+    const [visible, setVisible] = useState<number | undefined>();
     const navigate = useNavigate();
-    const sendingData = useSendData(
-        `https://127.0.0.1:8000/api/game/whishlist/${gameId}`,
-        "POST",
-        token
-    );
-    const { data, loading, error } = useFetch(
+
+    const { data: wishlistData, loading: wishlistLoading, error: wishlistError } = useFetch<WishlistGame[]>(
         `https://127.0.0.1:8000/api/user/wishlist/${userId}`,
         "GET"
     );
 
     useEffect(() => {
-        if (data) {
-            const finder = data.find(
+        if (wishlistData) {
+            const finder = wishlistData.find(
                 (game: WishlistGame) => game.igdbId === gameId
             );
             if (finder) {
-                setVisible(false);
+                setVisible(3);
             } else {
-                setVisible(true);
+                setVisible(2);
             }
         }
-    }, [userId, data, visible]);
+    }, [userId, wishlistData, gameId]);
 
-    const addWishlist = async () => {
-        if (token && userId && gameId) {
-            sendingData;
+    const callAPIaddToWishlist = async (gameId:number, tokenJWT: string) => {
+        try {
+            const res = await GamerboxApi.addToWishlist(gameId, tokenJWT);
+            if(res) {
+                navigate(0)
+            }
+        } catch (error) {
+            console.error(error);
         }
-        navigate(0);
     };
 
-    if (error) {
-        console.log(error);
+    const addWishlist = () => {
+        if (token && userId && gameId) {
+            callAPIaddToWishlist(gameId, token);
+        }
+    };
+
+    const callAPIremoveFromWishlist = async (gameId:number, tokenJWT: string) => {
+        try {
+            const res = await GamerboxApi.removeFromWishlist(gameId, tokenJWT);
+            if(res) {
+                navigate(0)
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const deleteGame = () => {
+        if (token && userId && gameId) {
+            callAPIremoveFromWishlist(gameId, token);
+        }
+    };
+
+    if (wishlistError) {
+        console.log(wishlistError);
     }
 
-    if (loading) {
+    if (wishlistLoading) {
         return (
             <div className="profile-top-info-data-numbers">
                 <div className="loader"></div>
@@ -244,10 +268,18 @@ function WishlistBtn({ gameId }: WishlistBtnProsp) {
         );
     }
 
-    if (visible) {
+    if (visible === 2) {
         return (
             <button className="wishListBtn" onClick={addWishlist}>
                 Add Wishlist
+            </button>
+        );
+    }
+
+    if (visible === 3) {
+        return (
+            <button className="wishListBtn" onClick={deleteGame}>
+                delete from wishlist
             </button>
         );
     }

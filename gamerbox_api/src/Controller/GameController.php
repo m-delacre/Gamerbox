@@ -62,9 +62,14 @@ class GameController extends AbstractController
     }
 
     #[Route('/api/game/{id}', name: 'api_game_detail', methods: ['GET'])]
-    public function getGame(int $id, SerializerInterface $serializer): JsonResponse
+    public function getGame(int $id, GameRepository $gameRepository, SerializerInterface $serializer): JsonResponse
     {
-        $game = $this->gameBuilder->buildGame($id);
+        $findGame = $gameRepository->findOneByIgdbId($id);
+        if($findGame) {
+            $game = $findGame;
+        } else {
+            $game = $this->gameBuilder->buildGame($id);
+        }
         $context = (new ObjectNormalizerContextBuilder())
             ->withGroups('full_game')
             ->toArray();
@@ -100,5 +105,26 @@ class GameController extends AbstractController
         $em->flush();
 
         return new JsonResponse('Jeu ajouté', Response::HTTP_OK, [], true);
+    }
+
+    #[IsGranted('ROLE_USER')]
+    #[Route('/api/game/whishlist/remove/{igdbId}', name: 'api_game_remove_wishlist', methods: ['POST'])]
+    public function removeGameFromWishlist(int $igdbId, WishlistRepository $wishlistRepository, EntityManagerInterface $em, GameRepository $gameRepository, GameBuilder $gameBuilder): JsonResponse
+    {
+        $game = $gameRepository->findOneByIgdbId($igdbId);
+        $user = $this->getUser();
+
+        if(!$game) {
+            return new JsonResponse('Game not found', Response::HTTP_NOT_FOUND, [], true);
+        }
+        
+        $wishlist = $wishlistRepository->findOneByUser($user);
+
+        $wishlist->removeGame($game);
+
+        $em->persist($wishlist);
+        $em->flush();
+
+        return new JsonResponse('Game delete from your wishlist', Response::HTTP_NO_CONTENT, [], true);
     }
 }

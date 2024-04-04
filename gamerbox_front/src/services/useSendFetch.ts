@@ -1,8 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 type MethodType = "GET" | "POST";
 
 function useSendData( url: string, method: MethodType, userToken: string) {
+    const [valide, setValide] = useState<boolean>();
     useEffect(() => {
         const sentData = async () => {
             try {
@@ -18,14 +19,18 @@ function useSendData( url: string, method: MethodType, userToken: string) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
     
-                return true;
+                setValide(true);
             } catch (error) {
+                setValide(false);
                 console.error("Error fetching user:", error);
                 return null;
             }
         };
         sentData().catch(console.error);
     }, [url]);
+    
+    return {valide};
 }
+
 
 export default useSendData;

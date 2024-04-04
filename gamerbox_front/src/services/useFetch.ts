@@ -1,51 +1,54 @@
-import { useEffect, useState } from "react";
-
-type GameInfo = {
-    igdbId: number;
-    name: string;
-    slug: string;
-    summary: string;
-    releaseDate: string;
-    banner: string;
-    developers: string;
-    cover: string;
-    modes: Array<string>;
-    theme: Array<string>;
-    genre: Array<string>;
-};
+import { useEffect, useState, useCallback } from "react";
 
 type MethodType = "GET" | "POST";
 
-function useFetch( url: string, method: MethodType) {
-    const [data, setData] = useState<any | null>(null);
-    const [loading, setLoading] = useState<any | null>(null);
-    const [error, setError] = useState<any | null>(null);
+function useFetch<T>(url: string, method: MethodType, requestData?: any, token?: string) {
+    const [data, setData] = useState<T | null>(null);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const fetchData = useCallback(async () => {
+        setLoading(true);
+        try {
+            const options: RequestInit = {
+                method: method,
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                },
+                body: method === "POST" ? JSON.stringify(requestData) : undefined,
+            };
+
+            // Add authorization header if token is provided
+            if (token) {
+                options.headers = {
+                    ...options.headers,
+                    Authorization: `Bearer ${token}`,
+                };
+            }
+
+            const response = await fetch(url, options);
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const responseData: T = await response.json();
+            setData(responseData);
+            setLoading(false);
+        } catch (error) {
+            setError(`Error fetching data: ${error}`);
+            setLoading(false);
+        }
+    }, [url, method, requestData, token]);
 
     useEffect(() => {
-        setLoading(true);
-        const fetchData = async () => {
-            try {
-                const response = await fetch(url, {
-                    method: method,
-                    headers: {
-                        Accept: "application/json",
-                    },
-                });
+        fetchData();
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-
-                const game: GameInfo = await response.json();
-                setLoading(false);
-                setData(game);
-            } catch (error) {
-                setLoading(false);
-                setError(`Error fetching game: ${error}`)
-            }
+        return () => {
+            // Clean up function
         };
-        fetchData().catch(console.error);
-    }, [url]);
+    }, [fetchData]);
 
     return { data, loading, error };
 }

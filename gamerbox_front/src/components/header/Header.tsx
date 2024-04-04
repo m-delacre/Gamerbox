@@ -8,9 +8,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { selectIsConnected, selectUserId, setId, setEmail, setPseudonym, setToken, setNotConnected } from "../../redux/userSlice";
 
 function Header() {
-    const [userId, setUserId] = useState<number>(
-        useSelector(selectUserId)
-    );
+    const userId = useSelector(selectUserId);
     const [connexion, setConnexion] = useState<boolean>(
         useSelector(selectIsConnected)
     );

@@ -38,7 +38,7 @@ class Game
     #[Groups(['full_game'])]
     private ?\DateTimeInterface $releaseDate = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['full_game'])]
     private ?string $developers = null;
 

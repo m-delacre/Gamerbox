@@ -203,6 +203,29 @@ class GamerboxApi {
         }
     }
 
+    static async removeFromWishlist(igdbId: number, userToken: string) {
+        const url = `https://127.0.0.1:8000/api/game/whishlist/remove/${igdbId}`;
+
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${userToken}`,
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            return true;
+        } catch (error) {
+            console.error("Error fetching user:", error);
+            return null;
+        }
+    }
+
     static async getUserWishlist(userId: number) {
         const url = `https://127.0.0.1:8000/api/user/wishlist/${userId}`;
 
