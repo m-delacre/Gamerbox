@@ -7,6 +7,20 @@
     box-sizing: border-box;
 }
 
+.profile-page-notfound {
+    width: 100%;
+    min-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.profile-page-notfound h1 {
+    font-size: 50px;
+}
+
 .profile-top {
     width: 100%;
     height: 400px;
@@ -81,22 +95,11 @@
     font-size: 20px;
 }
 
-.profile-top-info-no-btn {
-    position: absolute;
-    bottom: 50px;
-    left: 50px;
-    width: fit-content;
-    height: fit-content;
-    padding: 10px 20px;
-    border: 2px solid white;
-    border-radius: 20px;
-    background-color: #11112f;
-    color: #24FF00;
-    font-size: 20px;
-}
-
-.profile-top-info-btn-friend button:hover {
+.profile-top-info-data button:hover {
     cursor: pointer;
+    border: 2px solid white;
+    background-color: #11112f;
+    color: #b000bf;
 }
 
 .profile-top-info-data-top {
@@ -149,6 +152,18 @@
     font-size: 15px;
 }
 
+.btn-return {
+    width: fit-content;
+    height: fit-content;
+    padding: 15px 20px;
+    border: 2px solid white;
+    background-color: #11112f;
+    font-weight: 700;
+    color: #24FF00;
+    border-radius: 15px;
+    font-size: 20px;
+}
+
 .profile-bottom h4 {
     font-size: 25px;
     color: #b000bf;
@@ -163,13 +178,13 @@
     display: flex;
     flex-direction: row;
     padding: 0;
-    margin: 0;
+    margin-bottom: 100px;
     gap: 30px;
 }
 
 .wishlistGame {
     width: 25%;
-    height: 350px;
+    height: 300px;
     display: block;
 }
 

@@ -219,6 +219,8 @@ function WishlistBtn({ gameId }: WishlistBtnProsp) {
             } else {
                 setVisible(2);
             }
+        } else {
+            setVisible(2);
         }
     }, [userId, wishlistData, gameId]);
 

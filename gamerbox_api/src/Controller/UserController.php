@@ -2,8 +2,10 @@
 
 namespace App\Controller;
 
+use App\Entity\Follow;
 use App\Entity\User;
 use App\Entity\Wishlist;
+use App\Repository\FollowRepository;
 use App\Repository\UserRepository;
 use App\Repository\WishlistRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -13,6 +15,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Context\Normalizer\ObjectNormalizerContextBuilder as ContextBuilder;
@@ -21,12 +24,29 @@ use Symfony\Component\Serializer\Context\Normalizer\ObjectNormalizerContextBuild
 
 class UserController extends AbstractController
 {
-    #[Route('/api/register', name: 'api_user_registration')]
+    #[Route('/api/register', name: 'api_user_registration', methods:['POST'])]
     public function userRegistration(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, UserPasswordHasherInterface $passwordHasher, ValidatorInterface $validator): JsonResponse
     {
-        $user = $serializer->deserialize($request->getContent(), User::class, 'json');
+        $profilePictureFile = $request->files->get('profilePicture');
+        $user = $serializer->deserialize($request->request->get('data'), User::class, 'json');
         $user->setRoles(['ROLE_USER']);
         $user->setPassword($passwordHasher->hashPassword($user, $user->getPassword()));
+
+        if ($profilePictureFile) {
+            $newFileName = 'GBOX-' . uniqid() . '.' . $profilePictureFile->guessExtension();
+            try {
+                $profilePictureFile->move(
+                    $this->getParameter('kernel.project_dir') . '/public/uploads/profilePicture/',
+                    $newFileName
+                );
+            } catch (FileException $e) {
+                return new JsonResponse($serializer->serialize($e->getMessage(), 'json'), JsonResponse::HTTP_BAD_REQUEST, [], true);
+            }
+
+            $user->setProfilePicture('uploads/profilePicture/' . $newFileName);
+        } else {
+            $user->setProfilePicture(null);
+        }
 
         $errors = $validator->validate($user);
         if ($errors->count() > 0) {
@@ -45,11 +65,10 @@ class UserController extends AbstractController
     }
 
     #[Route('/api/user/wishlist/{id}', name: 'api_user_wishlist', methods: ['GET'])]
-    public function getUserWishlist(User $user, WishlistRepository $wishlistRepository, SerializerInterface $serializer): JsonResponse
+    public function getUserWishlist(User $user, SerializerInterface $serializer): JsonResponse
     {
-        // $wishlist = $wishlistRepository->findOneByUser($user);
-        $wishlist = $user->getWishlists()[0];
-        
+        $wishlist = $user->getWishlist();
+
         if (!$wishlist) {
             return new JsonResponse('pas trouvé', Response::HTTP_NOT_FOUND, [], true);
         }
@@ -57,8 +76,7 @@ class UserController extends AbstractController
         $context = (new ObjectNormalizerContextBuilder())
             ->withGroups('wishlist_game')
             ->toArray();
-        //dd($wishlist[0]->getGame()->toArray());
-        //$games = array_reverse($wishlist->getGame()->toArray());
+
         $serializedWishlist = $serializer->serialize($wishlist->getGame(), 'json', $context);
 
         return new JsonResponse($serializedWishlist, Response::HTTP_CREATED, [], true);
@@ -129,5 +147,66 @@ class UserController extends AbstractController
         $serializedFollowingList = $serializer->serialize($followerUsers, 'json', $context);
 
         return new JsonResponse($serializedFollowingList, Response::HTTP_CREATED, [], true);
+    }
+
+    #[IsGranted('ROLE_USER')]
+    #[Route('/api/follow/add/{id}', name: 'api_add_follow', methods: ['POST'])]
+    public function addAFollow(int $id, UserRepository $userRepository, SerializerInterface $serializer, EntityManagerInterface $manager): JsonResponse
+    {
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        $userFollowed = $userRepository->findOneById($id);
+        $followersOfUserFollowed = [];
+
+        foreach ($userFollowed->getFollowers() as $follow) {
+            $followersOfUserFollowed[] = $follow->getFollower();
+        }
+
+        $userIsFollower = false;
+        foreach ($followersOfUserFollowed as $follower) {
+            if ($follower->getId() === $user->getId()) {
+                $userIsFollower = true;
+                break;
+            }
+        }
+
+        if ($userFollowed && $userIsFollower === false) {
+            $followList = new Follow();
+            $followList->setFollower($user);
+            $followList->setFollowed($userFollowed);
+
+            $manager->persist($followList);
+
+            $manager->flush();
+
+            $context = (new ObjectNormalizerContextBuilder())
+                ->withGroups('user_follower')
+                ->toArray();
+
+            $serializedFollowingList = $serializer->serialize($followList, 'json', $context);
+
+            return new JsonResponse($serializedFollowingList, Response::HTTP_CREATED, [], true);
+        } else {
+            return new JsonResponse('', Response::HTTP_NOT_FOUND, [], false);
+        }
+    }
+
+    #[IsGranted('ROLE_USER')]
+    #[Route('/api/follow/remove/{id}', name: 'api_remove_follow', methods: ['POST'])]
+    public function removeFollowing(int $id, UserRepository $userRepository, FollowRepository $followRepository, SerializerInterface $serializer, EntityManagerInterface $manager): JsonResponse
+    {
+        $user = $this->getUser();
+        $userFollowed = $userRepository->findOneById($id);
+
+        $followToDelete = $followRepository->findOneBy(['follower'=>$user, 'followed' => $userFollowed]);
+
+        if ($followToDelete) {
+            $manager->remove($followToDelete);
+            $manager->flush();
+            return new JsonResponse('Game delete from your wishlist', Response::HTTP_NO_CONTENT, [], true);
+        }
+    
+        return new JsonResponse('', Response::HTTP_NOT_FOUND, [], true);
+        
     }
 }

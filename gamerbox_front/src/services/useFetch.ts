@@ -19,7 +19,6 @@ function useFetch<T>(url: string, method: MethodType, requestData?: any, token?:
                 body: method === "POST" ? JSON.stringify(requestData) : undefined,
             };
 
-            // Add authorization header if token is provided
             if (token) {
                 options.headers = {
                     ...options.headers,

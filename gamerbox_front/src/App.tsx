@@ -9,6 +9,7 @@ import Home from "./pages/home/Home.tsx";
 import Profile from "./pages/user_profile/Profile.tsx";
 import WishlistPage from "./pages/wishlist_page/WishlistPage.tsx";
 import GameNotFound from "./pages/gamenotfound/GameNotFound.tsx";
+import Register from "./pages/register/Register.tsx";
 
 const router = createBrowserRouter([
     {
@@ -31,8 +32,13 @@ const router = createBrowserRouter([
         element: <LoginPage />,
     },
     {
+        path: "/register",
+        element: <Register />,
+    },
+    {
         path: "/profile/:userId",
         element: <Profile />,
+        errorElement: <ErrorPage />
     },
     {
         path: "/wishlist/:userId",

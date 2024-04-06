@@ -52,6 +52,7 @@ function Header() {
             <div className="searchBar">
                 <SearchBar />
             </div>
+            <NavLink route="/register" text="Register" />
             <NavLink route="/login" text="Connexion" />
         </header>
     );

@@ -38,7 +38,7 @@ class GameBuilder
         $this->gameModeRepository = $gameModeRepository;
     }
 
-    function buildGame(int $igdbId): Game
+    function buildGame(int $igdbId): ?Game
     {
         $game = new Game();
 
@@ -48,6 +48,10 @@ class GameBuilder
             ['body' => 'fields id,artworks,cover,name,first_release_date,slug,summary,genres,game_modes,themes; where id = ' . $igdbId . ';']
         );
         $gameData = json_decode($response->getContent(), true);
+
+        if(!$gameData) {
+            return null;
+        }
 
         $game->setIgdbId($igdbId);
         $game->setName($gameData[0]['name']);

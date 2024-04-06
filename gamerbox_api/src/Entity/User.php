@@ -23,7 +23,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['user_info' ,'user_follower'])]
+    #[Groups(['user_info' ,'user_follower', 'review'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
@@ -45,11 +45,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['user_info' ,'user_follower'])]
+    #[Groups(['user_info' ,'user_follower', 'review'])]
     private ?string $pseudonym = null;
-
-    #[ORM\OneToMany(targetEntity: Wishlist::class, mappedBy: 'user', orphanRemoval: true)]
-    private Collection $wishlists;
 
     #[ORM\OneToMany(targetEntity: Follow::class, mappedBy: 'follower')]
     private Collection $following;
@@ -57,11 +54,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Follow::class, mappedBy: 'followed')]
     private Collection $followers;
 
+    #[ORM\OneToOne(mappedBy: 'user', cascade: ['persist', 'remove'])]
+    private ?Wishlist $wishlist = null;
+
+    #[Groups(['user_info', 'review'])]
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $profilePicture = null;
+
+    #[ORM\OneToMany(targetEntity: Review::class, mappedBy: 'user')]
+    private Collection $reviews;
+
     public function __construct()
     {
-        $this->wishlists = new ArrayCollection();
         $this->following = new ArrayCollection();
         $this->followers = new ArrayCollection();
+        $this->reviews = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -162,36 +169,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * @return Collection<int, Wishlist>
-     */
-    public function getWishlists(): Collection
-    {
-        return $this->wishlists;
-    }
-
-    public function addWishlist(Wishlist $wishlist): static
-    {
-        if (!$this->wishlists->contains($wishlist)) {
-            $this->wishlists->add($wishlist);
-            $wishlist->setUser($this);
-        }
-
-        return $this;
-    }
-
-    public function removeWishlist(Wishlist $wishlist): static
-    {
-        if ($this->wishlists->removeElement($wishlist)) {
-            // set the owning side to null (unless already changed)
-            if ($wishlist->getUser() === $this) {
-                $wishlist->setUser(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
      * @return Collection<int, Follow>
      */
     public function getFollowing(): Collection
@@ -245,6 +222,65 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($follower->getFollowed() === $this) {
                 $follower->setFollowed(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getWishlist(): ?Wishlist
+    {
+        return $this->wishlist;
+    }
+
+    public function setWishlist(Wishlist $wishlist): static
+    {
+        // set the owning side of the relation if necessary
+        if ($wishlist->getUser() !== $this) {
+            $wishlist->setUser($this);
+        }
+
+        $this->wishlist = $wishlist;
+
+        return $this;
+    }
+
+    public function getProfilePicture(): ?string
+    {
+        return $this->profilePicture;
+    }
+
+    public function setProfilePicture(?string $profilePicture): static
+    {
+        $this->profilePicture = $profilePicture;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Review>
+     */
+    public function getReviews(): Collection
+    {
+        return $this->reviews;
+    }
+
+    public function addReview(Review $review): static
+    {
+        if (!$this->reviews->contains($review)) {
+            $this->reviews->add($review);
+            $review->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReview(Review $review): static
+    {
+        if ($this->reviews->removeElement($review)) {
+            // set the owning side to null (unless already changed)
+            if ($review->getUser() === $this) {
+                $review->setUser(null);
             }
         }
 

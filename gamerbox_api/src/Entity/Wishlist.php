@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\WishlistRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
@@ -16,12 +17,16 @@ class Wishlist
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'wishlists')]
+    #[ORM\OneToOne(inversedBy: 'wishlist', cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
     #[ORM\ManyToMany(targetEntity: Game::class, inversedBy: 'wishlists')]
     private Collection $game;
+
+    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Groups(['full_game', 'wishlist_game'])]
+    private ?\DateTimeInterface $addedDate = null;
 
     public function __construct()
     {
@@ -38,7 +43,7 @@ class Wishlist
         return $this->user;
     }
 
-    public function setUser(?User $user): static
+    public function setUser(User $user): static
     {
         $this->user = $user;
 
@@ -65,6 +70,18 @@ class Wishlist
     public function removeGame(Game $game): static
     {
         $this->game->removeElement($game);
+
+        return $this;
+    }
+
+    public function getAddedDate(): ?\DateTimeInterface
+    {
+        return $this->addedDate;
+    }
+
+    public function setAddedDate(\DateTimeInterface $addedDate): static
+    {
+        $this->addedDate = $addedDate;
 
         return $this;
     }

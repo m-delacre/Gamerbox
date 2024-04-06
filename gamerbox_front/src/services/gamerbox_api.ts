@@ -42,6 +42,13 @@ type FollowUser = {
     pseudonyme: string
 }
 
+type RegisterInfo = {
+    id: number,
+    email: string,
+    pseudonym: string,
+    profilePicture: string
+}
+
 class GamerboxApi {
     static async getGame(id: string | undefined) {
         const url = `https://127.0.0.1:8000/api/game/${id}`;
@@ -96,7 +103,7 @@ class GamerboxApi {
 
             return thumbnails;
         } catch (error) {
-            console.error("Error fetching game:", error);
+            console.error("Error :", error);
             return null;
         }
     }
@@ -125,7 +132,41 @@ class GamerboxApi {
 
             return result;
         } catch (error) {
-            console.error("Error fetching user:", error);
+            console.error("Error :", error);
+            return null;
+        }
+    }
+
+    static async register(email: string, password: string, pseudonym: string, picture: File | null) {
+        const url = `https://127.0.0.1:8000/api/register`;
+    
+        let data = JSON.stringify({
+           "email": email,
+           "pseudonym": pseudonym,
+           "password": password
+        });
+        
+        const formData = new FormData();
+        formData.append("data", data);
+        if (picture) {
+            formData.append('profilePicture', picture);
+        }
+    
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                body: formData,
+            });
+    
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+    
+            const result: RegisterInfo = await response.json();
+    
+            return result;
+        } catch (error) {
+            console.error("Error :", error);
             return null;
         }
     }
@@ -151,7 +192,7 @@ class GamerboxApi {
 
             return data;
         } catch (error) {
-            console.error("Error fetching user:", error);
+            console.error("Error :", error);
             return null;
         }
     }
@@ -175,7 +216,7 @@ class GamerboxApi {
 
             return data;
         } catch (error) {
-            console.error("Error fetching user:", error);
+            console.error("Error :", error);
             return null;
         }
     }
@@ -198,7 +239,7 @@ class GamerboxApi {
 
             return true;
         } catch (error) {
-            console.error("Error fetching user:", error);
+            console.error("Error :", error);
             return null;
         }
     }
@@ -221,7 +262,7 @@ class GamerboxApi {
 
             return true;
         } catch (error) {
-            console.error("Error fetching user:", error);
+            console.error("Error :", error);
             return null;
         }
     }
@@ -245,7 +286,7 @@ class GamerboxApi {
 
             return data;
         } catch (error) {
-            console.error("Error fetching user:", error);
+            console.error("Error :", error);
             return null;
         }
     }
@@ -269,7 +310,7 @@ class GamerboxApi {
 
             return data;
         } catch (error) {
-            console.error("Error fetching user:", error);
+            console.error("Error :", error);
             return null;
         }
     }
@@ -293,7 +334,53 @@ class GamerboxApi {
 
             return data;
         } catch (error) {
-            console.error("Error fetching user:", error);
+            console.error("Error :", error);
+            return null;
+        }
+    }
+
+    static async addFollow(userToAddId: number, userToken: string) {
+        const url = `https://127.0.0.1:8000/api/follow/add/${userToAddId}`;
+
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${userToken}`,
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            return true;
+        } catch (error) {
+            console.error("Error :", error);
+            return null;
+        }
+    }
+
+    static async removeFollow(userToRemoveId: number, userToken: string) {
+        const url = `https://127.0.0.1:8000/api/follow/remove/${userToRemoveId}`;
+
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${userToken}`,
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            return true;
+        } catch (error) {
+            console.error("Error :", error);
             return null;
         }
     }

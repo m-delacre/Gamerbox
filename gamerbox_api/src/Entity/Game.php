@@ -19,11 +19,11 @@ class Game
     private ?int $id = null;
 
     #[ORM\Column]
-    #[Groups(['full_game', 'wishlist_game'])]
+    #[Groups(['full_game', 'wishlist_game', 'review'])]
     private ?int $igdbId = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['full_game', 'wishlist_game'])]
+    #[Groups(['full_game', 'wishlist_game', 'review'])]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
@@ -65,12 +65,16 @@ class Game
     #[ORM\ManyToMany(targetEntity: Wishlist::class, mappedBy: 'game')]
     private Collection $wishlists;
 
+    #[ORM\OneToMany(targetEntity: Review::class, mappedBy: 'game')]
+    private Collection $reviews;
+
     public function __construct()
     {
         $this->modes = new ArrayCollection();
         $this->theme = new ArrayCollection();
         $this->genre = new ArrayCollection();
         $this->wishlists = new ArrayCollection();
+        $this->reviews = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -268,6 +272,36 @@ class Game
     {
         if ($this->wishlists->removeElement($wishlist)) {
             $wishlist->removeGame($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Review>
+     */
+    public function getReviews(): Collection
+    {
+        return $this->reviews;
+    }
+
+    public function addReview(Review $review): static
+    {
+        if (!$this->reviews->contains($review)) {
+            $this->reviews->add($review);
+            $review->setGame($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReview(Review $review): static
+    {
+        if ($this->reviews->removeElement($review)) {
+            // set the owning side to null (unless already changed)
+            if ($review->getGame() === $this) {
+                $review->setGame(null);
+            }
         }
 
         return $this;

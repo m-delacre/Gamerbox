@@ -16,25 +16,14 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Component\Serializer\Context\Normalizer\ObjectNormalizerContextBuilder;
 
 class GameController extends AbstractController
 {
-    private $client = HttpClientInterface::class;
     private $gameBuilder = GameBuilder::class;
 
-    public function __construct(HttpClientInterface $client, GameBuilder $gameBuilder)
+    public function __construct(GameBuilder $gameBuilder)
     {
-        $this->client = $client->withOptions([
-            'base_uri' => 'https://api.igdb.com/v4/',
-            'headers' => [
-                'Accept' => 'application/json',
-                'Client-ID' => $_ENV['CLIENT_ID'],
-            ],
-            'auth_bearer' => $_ENV['AUTH_BEARER'],
-        ]);
-
         $this->gameBuilder = $gameBuilder;
     }
 
@@ -96,10 +85,13 @@ class GameController extends AbstractController
             $newWishlist = new Wishlist();
             $newWishlist->setUser($this->getUser());
             $newWishlist->addGame($game);
+            $newWishlist->setAddedDate(new DateTime());
 
             $em->persist($newWishlist);
         } else {
             $wishlist->addGame($game);
+            $wishlist->setAddedDate(new DateTime());
+            $em->persist($wishlist);
         }
 
         $em->flush();
