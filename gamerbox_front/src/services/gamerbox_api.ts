@@ -49,6 +49,15 @@ type RegisterInfo = {
     profilePicture: string
 }
 
+type ReviewData = {
+    id: number;
+    user: { id: number; pseudonym: string; profilePicture: string };
+    content: string;
+    liked: boolean | null;
+    mitigate: boolean | null;
+    game: { igdbId: number; name: string };
+};
+
 class GamerboxApi {
     static async getGame(id: string | undefined) {
         const url = `https://127.0.0.1:8000/api/game/${id}`;
@@ -379,6 +388,35 @@ class GamerboxApi {
             }
 
             return true;
+        } catch (error) {
+            console.error("Error :", error);
+            return null;
+        }
+    }
+
+    static async getGameReview(offset: number, igdbId: number) {
+        const url = `https://127.0.0.1:8000/api/game/review/${igdbId}`;
+    
+        let data = {
+           "offset": offset,
+        };
+        
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const result: ReviewData[] = await response.json();
+
+            return result;
         } catch (error) {
             console.error("Error :", error);
             return null;

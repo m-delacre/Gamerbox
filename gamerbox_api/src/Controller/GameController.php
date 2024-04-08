@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Game;
 use App\Entity\Wishlist;
 use App\Repository\GameRepository;
+use App\Repository\ReviewRepository;
 use App\Repository\WishlistRepository;
 use App\Service\GameBuilder;
 use DateTime;
@@ -54,7 +55,7 @@ class GameController extends AbstractController
     public function getGame(int $id, GameRepository $gameRepository, SerializerInterface $serializer): JsonResponse
     {
         $findGame = $gameRepository->findOneByIgdbId($id);
-        if($findGame) {
+        if ($findGame) {
             $game = $findGame;
         } else {
             $game = $this->gameBuilder->buildGame($id);
@@ -74,14 +75,14 @@ class GameController extends AbstractController
         $game = $gameRepository->findOneByIgdbId($igdbId);
         $user = $this->getUser();
 
-        if(!$game) {
+        if (!$game) {
             $game = $gameBuilder->buildGame($igdbId);
             $gameRepository->saveGame($game);
         }
-        
+
         $wishlist = $wishlistRepository->findOneByUser($user);
 
-        if(!$wishlist) {
+        if (!$wishlist) {
             $newWishlist = new Wishlist();
             $newWishlist->setUser($this->getUser());
             $newWishlist->addGame($game);
@@ -106,10 +107,10 @@ class GameController extends AbstractController
         $game = $gameRepository->findOneByIgdbId($igdbId);
         $user = $this->getUser();
 
-        if(!$game) {
+        if (!$game) {
             return new JsonResponse('Game not found', Response::HTTP_NOT_FOUND, [], true);
         }
-        
+
         $wishlist = $wishlistRepository->findOneByUser($user);
 
         $wishlist->removeGame($game);
@@ -118,5 +119,28 @@ class GameController extends AbstractController
         $em->flush();
 
         return new JsonResponse('Game delete from your wishlist', Response::HTTP_NO_CONTENT, [], true);
+    }
+
+    #[Route('/api/game/review/{gameId}', name: 'app_get_game_reviews', methods: ['GET'])]
+    public function getGameReviews(int $gameId, Request $request, GameRepository $gameRepository, ReviewRepository $reviewRepository, SerializerInterface $serializer, EntityManagerInterface $em): JsonResponse
+    {
+        $game = $gameRepository->findOneByIgdbId($gameId);
+        if ($game) {
+            $offset = $request->query->get('offset');
+            $reviews = $reviewRepository->loadMoreReview($game->getId(), $offset, $em);
+
+            if (!$reviews) {
+                return new JsonResponse([], Response::HTTP_OK, [], false);
+            }
+
+            $context = (new ObjectNormalizerContextBuilder())
+                ->withGroups('review')
+                ->toArray();
+            $serializedReviews = $serializer->serialize($reviews, 'json', $context);
+
+            return new JsonResponse($serializedReviews, Response::HTTP_OK, [], true);
+        }
+
+        return new JsonResponse('Game not found', Response::HTTP_NOT_FOUND, [], true);
     }
 }

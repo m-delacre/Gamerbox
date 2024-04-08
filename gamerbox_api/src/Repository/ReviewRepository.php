@@ -2,8 +2,10 @@
 
 namespace App\Repository;
 
+use App\Entity\Game;
 use App\Entity\Review;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -45,4 +47,37 @@ class ReviewRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+
+public function loadMoreReview(int $gameId, $offset, EntityManagerInterface $em)
+    {
+        $qb = $em->createQueryBuilder();
+
+        $qb->add('select', 'r')
+            ->add('from', 'App\Entity\Review r')
+            ->add('where', 'r.game = :gameId')
+            ->add('orderBy', 'r.id DESC')
+            ->setFirstResult($offset)
+            ->setMaxResults(3)
+            ->setParameter('gameId', $gameId);
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+
+        $data = [];
+        $lenght = count($result);
+
+        for ($i = 0; $i < $lenght; $i++) {
+            $newReview = [
+                "id" => $result[$i]->getId(),
+                "user" => [$result[$i]->getUser()->getId(), $result[$i]->getUser()->getPseudonym(),$result[$i]->getUser()->getProfilePicture()],
+                "content" => $result[$i]->getContent(),
+                "liked" => $result[$i]->isLiked(),
+                "mitigate" => $result[$i]->isMitigate()
+            ];
+
+            array_push($data, $newReview);
+        }
+
+        return $data;
+    }
 }

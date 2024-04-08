@@ -4,6 +4,7 @@ namespace App\DataFixtures;
 
 use App\Entity\Follow;
 use App\Entity\Game;
+use App\Entity\Review;
 use App\Entity\User;
 use App\Entity\Wishlist;
 use App\Service\GameBuilder;
@@ -30,11 +31,11 @@ class AppFixtures extends Fixture
         $manager->persist($game);
 
         $game1 = new Game();
-        $game1 = $this->gameBuilder->buildGame(15558);
+        $game1 = $this->gameBuilder->buildGame(115);
         $manager->persist($game1);
 
         $game2 = new Game();
-        $game2 = $this->gameBuilder->buildGame(884);
+        $game2 = $this->gameBuilder->buildGame(250616);
         $manager->persist($game2);
 
         $game3 = new Game();
@@ -44,6 +45,10 @@ class AppFixtures extends Fixture
         $game4 = new Game();
         $game4 = $this->gameBuilder->buildGame(9874);
         $manager->persist($game4);
+
+        $game5 = new Game();
+        $game5 = $this->gameBuilder->buildGame(241);
+        $manager->persist($game5);
 
         $user = new User();
         $user->setEmail('athos@gamerbox.com');
@@ -58,6 +63,7 @@ class AppFixtures extends Fixture
         $wishlist->setAddedDate(new DateTime());
         $wishlist->addGame($game);
         $wishlist->addGame($game4);
+        $wishlist->addGame($game5);
         $manager->persist($wishlist);
 
         $user1 = new User();
@@ -74,6 +80,7 @@ class AppFixtures extends Fixture
         $wishlist1->addGame($game);
         $wishlist1->addGame($game3);
         $wishlist1->addGame($game4);
+        $wishlist1->addGame($game5);
         $manager->persist($wishlist1);
 
         $user2 = new User();
@@ -88,6 +95,7 @@ class AppFixtures extends Fixture
         $wishlist2->setAddedDate(new DateTime());
         $wishlist2->addGame($game);
         $wishlist2->addGame($game2);
+        $wishlist2->addGame($game5);
         $manager->persist($wishlist2);
 
         $user3 = new User();
@@ -125,6 +133,54 @@ class AppFixtures extends Fixture
         $followList3->setFollower($user2);
         $followList3->setFollowed($user3);
         $manager->persist($followList3);
+
+        $review = new Review();
+        $review->setUser($user);
+        $review->setContent("trop cool");
+        $review->setGame($game5);
+        $review->setLiked(true);
+        $review->setMitigate(false);
+        $manager->persist($review);
+
+        $review1 = new Review();
+        $review1->setUser($user1);
+        $review1->setContent("pas ouf");
+        $review1->setGame($game5);
+        $review1->setLiked(null);
+        $review1->setMitigate(true);
+        $manager->persist($review1);
+
+        $review2 = new Review();
+        $review2->setUser($user2);
+        $review2->setContent("naze");
+        $review2->setGame($game5);
+        $review2->setLiked(false);
+        $review2->setMitigate(false);
+        $manager->persist($review2);
+
+        $review3 = new Review();
+        $review3->setUser($user3);
+        $review3->setContent("que dire...");
+        $review3->setGame($game5);
+        $review3->setLiked(null);
+        $review3->setMitigate(true);
+        $manager->persist($review3);
+
+        $review4 = new Review();
+        $review4->setUser($user);
+        $review4->setContent("trop cool");
+        $review4->setGame($game2);
+        $review4->setLiked(true);
+        $review4->setMitigate(false);
+        $manager->persist($review4);
+        
+        $review5 = new Review();
+        $review5->setUser($user3);
+        $review5->setContent("trop cool");
+        $review5->setGame($game3);
+        $review5->setLiked(true);
+        $review5->setMitigate(false);
+        $manager->persist($review5);
 
         $manager->flush();
     }

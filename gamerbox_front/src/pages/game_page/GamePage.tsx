@@ -5,12 +5,7 @@ import DateFormater from "../../services/dateFormater";
 import TagPills from "../../components/tag_pills/TagPills";
 import Header from "../../components/header/Header";
 import "./GamePage.css";
-import Note from "../../components/note/Note";
 import GameReview from "../../components/game_review/GameReview";
-import pictureOrc from "../../assets/user_orc.png";
-import pictureRobot from "../../assets/user_robot.png";
-import pictureDivers from "../../assets/user_divers.png";
-import pictureChat from "../../assets/chatpote.jpg";
 import noCover from "../../assets/img_not_available.jpg";
 import noBanner from "../../assets/gamerbox_img.png";
 import { selectToken, selectUserId } from "../../redux/userSlice";
@@ -110,9 +105,7 @@ function GamePage() {
                                 <></>
                             )}
                         </section>
-                        <section className="game-top-info-note">
-                            <Note note={5} />
-                        </section>
+                        <section className="game-top-info-note"></section>
                     </section>
                 </section>
                 <section className="game-bottom">
@@ -155,37 +148,128 @@ function GamePage() {
                     </section>
                     <section className="game-bottom-category">
                         <h4>Last reviews :</h4>
-                        <div className="game-bottom-reviews">
-                            <GameReview
-                                name="John_Doe"
-                                content="super jeu !"
-                                profilPicture={pictureRobot}
-                                note={4}
-                            />
-                            <GameReview
-                                name="HellDivers"
-                                content="Pour la démocratie!💀🦅👽"
-                                profilPicture={pictureDivers}
-                                note={5}
-                            />
-                            <GameReview
-                                name="PotiChat_poT"
-                                content="Y'a pas de chat dans le jeu?🐱"
-                                profilPicture={pictureChat}
-                                note={5}
-                            />
-                            <GameReview
-                                name="Rageux_du_77"
-                                content="trop nul 😠"
-                                profilPicture={pictureOrc}
-                                note={2.5}
-                            />
-                        </div>
+                        {/* les reviews */}
+                        {gameId ? (
+                            <ReviewList igdbId={parseInt(gameId)} />
+                        ) : (
+                            <></>
+                        )}
                     </section>
                 </section>
             </main>
         </div>
     );
+}
+
+type ReviewData = {
+    id: number;
+    user: [id: number, pseudonym: string, profilePicture: string];
+    content: string;
+    liked: boolean | null;
+    mitigate: boolean | null;
+    game: { igdbId: number; name: string };
+};
+
+type ReviewListProsp = {
+    igdbId: number | undefined;
+};
+
+function ReviewList({ igdbId }: ReviewListProsp) {
+    const [offset, setOffset] = useState<number>(0);
+    const [reviewList, setReviewList] = useState<ReviewData[] | null>(null);
+    const [showBtn, setShowBtn] = useState<boolean>(false);
+    const {
+        data: reviewData,
+        loading: reviewLoading,
+        error: reviewError,
+    } = useFetch<ReviewData[]>(
+        `https://127.0.0.1:8000/api/game/review/${igdbId}?offset=${offset}`,
+        "GET"
+    );
+
+    // useEffect(() => {
+    //     if (reviewData) {
+    //         let newValues: Array<any> = [];
+    //         if (reviewData && reviewData.length > 0) {
+    //             newValues.push(...reviewData);
+    //         }
+
+    //         if (reviewList) {
+    //             newValues.push(...reviewList);
+    //         }
+
+    //         setReviewList(newValues);
+    //         setShowBtn(true);
+    //         if (reviewData.length === 0) {
+    //             setShowBtn(false);
+    //         }
+    //         console.log(reviewData)
+    //     }
+    // }, [reviewData, offset]);
+
+    useEffect(() => {
+        if (reviewData) {
+            setReviewList((prevList) => {
+                const filteredData = reviewData.filter(
+                    (newReview) =>
+                        !prevList?.some(
+                            (oldReview) => oldReview.id === newReview.id
+                        )
+                );
+                return prevList ? [...prevList, ...filteredData] : filteredData;
+            });
+            if (reviewList && reviewList.length >= 3) {
+                setShowBtn(true);
+            }
+            if (reviewData.length === 0) {
+                setShowBtn(false);
+            }
+            console.log(reviewData);
+        }
+    }, [reviewData, offset]);
+
+    if (reviewError) {
+        console.log(reviewError);
+    }
+
+    if (reviewLoading) {
+        return (
+            <div className="game-bottom-reviews">
+                <div className="loader"></div>
+            </div>
+        );
+    }
+
+    const loadMoreReview = () => {
+        setOffset(offset + 3);
+    };
+
+    if (reviewList) {
+        return (
+            <div className="game-bottom-reviews">
+                {reviewList?.map((review: ReviewData, index: number) => (
+                    <GameReview
+                        key={`$${review.id}-${index}`}
+                        pseudonym={review.user[1]}
+                        content={review.content}
+                        profilPicture={review.user[2]}
+                        liked={review.liked}
+                        mitigate={review.mitigate}
+                        userId={review.user[0]}
+                    />
+                ))}
+                {showBtn ? (
+                    <button className="btn-viewmore" onClick={loadMoreReview}>
+                        more review
+                    </button>
+                ) : (
+                    <></>
+                )}
+            </div>
+        );
+    } else {
+        <p>No review yet 😅</p>;
+    }
 }
 
 type WishlistBtnProsp = {
@@ -204,7 +288,11 @@ function WishlistBtn({ gameId }: WishlistBtnProsp) {
     const [visible, setVisible] = useState<number | undefined>();
     const navigate = useNavigate();
 
-    const { data: wishlistData, loading: wishlistLoading, error: wishlistError } = useFetch<WishlistGame[]>(
+    const {
+        data: wishlistData,
+        loading: wishlistLoading,
+        error: wishlistError,
+    } = useFetch<WishlistGame[]>(
         `https://127.0.0.1:8000/api/user/wishlist/${userId}`,
         "GET"
     );
@@ -224,11 +312,11 @@ function WishlistBtn({ gameId }: WishlistBtnProsp) {
         }
     }, [userId, wishlistData, gameId]);
 
-    const callAPIaddToWishlist = async (gameId:number, tokenJWT: string) => {
+    const callAPIaddToWishlist = async (gameId: number, tokenJWT: string) => {
         try {
             const res = await GamerboxApi.addToWishlist(gameId, tokenJWT);
-            if(res) {
-                navigate(0)
+            if (res) {
+                navigate(0);
             }
         } catch (error) {
             console.error(error);
@@ -241,11 +329,14 @@ function WishlistBtn({ gameId }: WishlistBtnProsp) {
         }
     };
 
-    const callAPIremoveFromWishlist = async (gameId:number, tokenJWT: string) => {
+    const callAPIremoveFromWishlist = async (
+        gameId: number,
+        tokenJWT: string
+    ) => {
         try {
             const res = await GamerboxApi.removeFromWishlist(gameId, tokenJWT);
-            if(res) {
-                navigate(0)
+            if (res) {
+                navigate(0);
             }
         } catch (error) {
             console.error(error);

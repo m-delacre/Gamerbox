@@ -1,25 +1,9 @@
 import Header from "../../components/header/Header";
 import "./Home.css";
 import wallpaper from "../../assets/limbowallpaper.jpg";
-import useSendData from "../../services/useSendFetch";
-import { useDispatch, useSelector } from "react-redux";
-import { selectToken, setNotConnected, setId, setEmail, setToken, setPseudonym } from "../../redux/userSlice";
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 
 function Home() {
     const loading = true;
-    const dispatch = useDispatch();
-    const navigate = useNavigate();
-    
-    function disconnect() {
-        dispatch(setNotConnected());
-        dispatch(setId(null));
-        dispatch(setEmail(''));
-        dispatch(setPseudonym(''));
-        dispatch(setToken(''));
-        navigate(0);
-    }
 
     return (
         <div className="homepage">

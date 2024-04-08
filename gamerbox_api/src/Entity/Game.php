@@ -47,7 +47,7 @@ class Game
     private ?string $banner = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['full_game', 'wishlist_game'])]
+    #[Groups(['full_game', 'wishlist_game', 'review'])]
     private ?string $cover = null;
 
     #[ORM\ManyToMany(targetEntity: GameMode::class, inversedBy: 'games')]

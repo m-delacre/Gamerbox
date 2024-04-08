@@ -15,6 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\Context\Normalizer\ObjectNormalizerContextBuilder;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class ReviewController extends AbstractController
 {
@@ -27,13 +28,19 @@ class ReviewController extends AbstractController
     }
 
     #[Route('/api/review/add/{igdbId}', name: 'app_add_review', methods: ['POST'])]
-    public function addReview(int $igdbId, Request $request, GameRepository $gameRepository, EntityManagerInterface $manager, SerializerInterface $serializer): JsonResponse
+    #[IsGranted('ROLE_USER')]
+    public function addReview(int $igdbId, Request $request, ReviewRepository $reviewRepository, GameRepository $gameRepository, EntityManagerInterface $manager, SerializerInterface $serializer): JsonResponse
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
         $game = $gameRepository->findOneByIgdbId($igdbId);
+        $checkReviewed = $reviewRepository->findBy(['user' => $user, 'game' => $game]);
 
-        if(!$game) {
+        if ($checkReviewed) {
+            return new JsonResponse('Already reviewed', Response::HTTP_NOT_ACCEPTABLE, [], false);
+        }
+
+        if (!$game) {
             $game = $this->gameBuilder->buildGame($igdbId);
             $gameRepository->saveGame($game);
         }
@@ -53,17 +60,41 @@ class ReviewController extends AbstractController
         return new JsonResponse($serializedReview, Response::HTTP_CREATED, [], true);
     }
 
+    #[Route('/api/review/check/{igdbId}', name: 'app_check_review', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function checkReview(int $igdbId, Request $request, ReviewRepository $reviewRepository, GameRepository $gameRepository, EntityManagerInterface $manager, SerializerInterface $serializer): JsonResponse
+    {
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        $game = $gameRepository->findOneByIgdbId($igdbId);
+        $checkReviewed = $reviewRepository->findBy(['user' => $user, 'game' => $game]);
+
+        if (!$game) {
+            return new JsonResponse(Response::HTTP_NOT_FOUND);
+        }
+
+        if (!$checkReviewed) {
+            $data = ['reviewed' => false];
+            $serializedData = $serializer->serialize($data, 'json');
+            return new JsonResponse($serializedData, Response::HTTP_ACCEPTED, [], true);
+        }
+
+        $data = ['reviewed' => true];
+        $serializedData = $serializer->serialize($data, 'json');
+        return new JsonResponse($serializedData, Response::HTTP_ACCEPTED, [], true);
+    }
+
     #[Route('/api/review/delete/{id}', name: 'app_delete_review', methods: ['POST'])]
     public function deleteReview(Review $review, Request $request, GameRepository $gameRepository, EntityManagerInterface $manager, SerializerInterface $serializer): JsonResponse
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
-        if(!$review) {
+        if (!$review) {
             return new JsonResponse('No reviews', Response::HTTP_NOT_FOUND, [], false);
         }
 
-        if($review->getUser() != $user) {
+        if ($review->getUser() != $user) {
             return new JsonResponse(Response::HTTP_FORBIDDEN);
         }
 
@@ -78,7 +109,7 @@ class ReviewController extends AbstractController
     {
         $reviews = $reviewRepository->findByUser($user);
 
-        if(!$reviews) {
+        if (!$reviews) {
             return new JsonResponse('No reviews', Response::HTTP_NOT_FOUND, [], false);
         }
 

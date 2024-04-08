@@ -13,6 +13,7 @@ import {
 } from "../../redux/userSlice";
 import useFetch from "../../services/useFetch";
 import GamerboxApi from "../../services/gamerbox_api";
+import GameReviewProfile from "../../components/game_review_profile/GameReviewProfile";
 
 type UserInfo = {
     id: number;
@@ -42,7 +43,6 @@ export default function Profile() {
     const [userInfo, setUserInfo] = useState<UserInfo | null>();
     const [username, setUsername] = useState<string | null>();
     const [profilePicture, setProfilePicture] = useState<string | null>();
-    const reviewNumber = 10;
     const navigate = useNavigate();
     const { data, loading, error } = useFetch<UserInfo>(
         `https://127.0.0.1:8000/api/user/${userId}`,
@@ -107,10 +107,7 @@ export default function Profile() {
                             </div>
                             <div className="profile-top-info-data">
                                 <div className="profile-top-info-data-top">
-                                    <div className="profile-top-info-data-numbers">
-                                        <p>{reviewNumber}</p>
-                                        <p>Reviews</p>
-                                    </div>
+                                    <ReviewsData userId={userId} />
                                     <FollowData userId={userId} />
                                     <FollowerData userId={userId} />
                                 </div>
@@ -133,9 +130,75 @@ export default function Profile() {
                     </Link>
                     <WishlistSection userId={userId} />
                 </section>
+                <section className="profile-bottom">
+                    <h4>Reviews:</h4>
+                    {userId ? <ReviewList userId={parseInt(userId)} /> : <p>No reviews 😕</p>}
+                </section>
             </main>
         </div>
     );
+}
+
+type ReviewData = {
+    id: number;
+    user: {id: number, pseudonym: string, profilePicture: string};
+    content: string;
+    liked: boolean | null;
+    mitigate: boolean | null;
+    game: { igdbId: number; name: string, cover: string };
+};
+
+type ReviewListProsp = {
+    userId: number | undefined;
+};
+
+function ReviewList({ userId }: ReviewListProsp) {
+    const [reviewList, setReviewList] = useState<ReviewData[] | null>(null);
+    const {
+        data: reviewData,
+        loading: reviewLoading,
+        error: reviewError,
+    } = useFetch<ReviewData[]>(
+        `https://127.0.0.1:8000/api/review/get/${userId}`,
+        "GET"
+    );
+
+    useEffect(() => {
+        if (reviewData) {
+            setReviewList(reviewData);
+        }
+    }, [reviewData]);
+
+    if (reviewError) {
+        console.log(reviewError);
+    }
+
+    if (reviewLoading) {
+        return <div className="loader"></div>;
+    }
+
+    if (reviewList) {
+        return (
+            <div className="game-bottom-reviews">
+                {reviewList?.map((review: ReviewData, index: number) => (
+                    <GameReviewProfile
+                        key={`$${review.id}-${index}`}
+                        pseudonym={review.user.pseudonym}
+                        content={review.content}
+                        profilPicture={review.user.profilePicture}
+                        liked={review.liked}
+                        mitigate={review.mitigate}
+                        userId={review.user.id}
+                        gameCover={review.game.cover}
+                        gameId={review.game.igdbId}
+                        gameName={review.game.name}
+                    />
+                ))}
+            </div>
+        );
+    } else {
+        <p>No review yet 😅</p>;
+    }
 }
 
 function BtnFollow({ pageUserId }: BtnFollowProps) {
@@ -286,6 +349,41 @@ function FollowerData({ userId }: UserDataProps) {
             <div className="profile-top-info-data-numbers">
                 <p>{follower.length}</p>
                 <p>Followers</p>
+            </div>
+        );
+    }
+}
+
+function ReviewsData({ userId }: UserDataProps) {
+    const [reviewNum, setReviewNum] = useState<number>(0);
+    const { data, loading, error } = useFetch<FollowUser[]>(
+        `https://127.0.0.1:8000/api/review/get/${userId}`,
+        "GET"
+    );
+
+    useEffect(() => {
+        if (data) {
+            setReviewNum(data.length);
+        }
+    }, [userId, data]);
+
+    if (error) {
+        console.error(error);
+    }
+
+    if (loading) {
+        return (
+            <div className="profile-top-info-data-numbers">
+                <div className="loader"></div>
+            </div>
+        );
+    }
+
+    if (reviewNum) {
+        return (
+            <div className="profile-top-info-data-numbers">
+                <p>{reviewNum}</p>
+                <p>Reviews</p>
             </div>
         );
     }
