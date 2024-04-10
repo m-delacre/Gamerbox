@@ -2,27 +2,27 @@
 
 namespace App\Repository;
 
-use App\Entity\Wishlist;
+use App\Entity\WishlistGame;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Wishlist>
+ * @extends ServiceEntityRepository<WishlistGame>
  *
- * @method Wishlist|null find($id, $lockMode = null, $lockVersion = null)
- * @method Wishlist|null findOneBy(array $criteria, array $orderBy = null)
- * @method Wishlist[]    findAll()
- * @method Wishlist[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method WishlistGame|null find($id, $lockMode = null, $lockVersion = null)
+ * @method WishlistGame|null findOneBy(array $criteria, array $orderBy = null)
+ * @method WishlistGame[]    findAll()
+ * @method WishlistGame[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class WishlistRepository extends ServiceEntityRepository
+class WishlistGameRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Wishlist::class);
+        parent::__construct($registry, WishlistGame::class);
     }
 
     //    /**
-    //     * @return Wishlist[] Returns an array of Wishlist objects
+    //     * @return WishlistGame[] Returns an array of WishlistGame objects
     //     */
     //    public function findByExampleField($value): array
     //    {
@@ -36,7 +36,7 @@ class WishlistRepository extends ServiceEntityRepository
     //        ;
     //    }
 
-    //    public function findOneBySomeField($value): ?Wishlist
+    //    public function findOneBySomeField($value): ?WishlistGame
     //    {
     //        return $this->createQueryBuilder('w')
     //            ->andWhere('w.exampleField = :val')

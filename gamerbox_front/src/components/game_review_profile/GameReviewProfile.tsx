@@ -2,6 +2,9 @@ import noPicture from "../../assets/img_not_available.jpg";
 import { NavLink } from "react-router-dom";
 import "./GameReviewProfile.css";
 import ImageModifier from "../../services/imageModifier";
+import { API_IMG_URL } from '../../../config.ts';
+
+const imgURL =  API_IMG_URL;
 
 type GameReviewProps = {
     pseudonym: string;
@@ -32,7 +35,7 @@ function GameReviewProfile({
                     <img src={noPicture} alt="" />
                 ) : (
                     <img
-                        src={`https://127.0.0.1:8000/${profilPicture}`}
+                        src={`${imgURL}/${profilPicture}`}
                         alt=""
                     />
                 )}

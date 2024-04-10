@@ -69,6 +69,7 @@
 .reviewProfile-right img {
     width: 70%;
     height: 250px;
+    object-fit: fill;
 }
 
 .reviewProfile-right h3 {

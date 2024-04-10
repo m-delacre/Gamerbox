@@ -23,7 +23,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['user_info' ,'user_follower', 'review'])]
+    #[Groups(['user_info' ,'user_follower', 'review', 'wishlist_game'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
@@ -45,7 +45,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['user_info' ,'user_follower', 'review'])]
+    #[Groups(['user_info' ,'user_follower', 'review', 'wishlist_game'])]
     private ?string $pseudonym = null;
 
     #[ORM\OneToMany(targetEntity: Follow::class, mappedBy: 'follower')]
@@ -54,9 +54,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Follow::class, mappedBy: 'followed')]
     private Collection $followers;
 
-    #[ORM\OneToOne(mappedBy: 'user', cascade: ['persist', 'remove'])]
-    private ?Wishlist $wishlist = null;
-
     #[Groups(['user_info', 'review'])]
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $profilePicture = null;
@@ -64,11 +61,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Review::class, mappedBy: 'user')]
     private Collection $reviews;
 
+    #[ORM\OneToMany(targetEntity: WishlistGame::class, mappedBy: 'User')]
+    private Collection $wishlistGames;
+
     public function __construct()
     {
         $this->following = new ArrayCollection();
         $this->followers = new ArrayCollection();
         $this->reviews = new ArrayCollection();
+        $this->wishlistGames = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -228,23 +229,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getWishlist(): ?Wishlist
-    {
-        return $this->wishlist;
-    }
-
-    public function setWishlist(Wishlist $wishlist): static
-    {
-        // set the owning side of the relation if necessary
-        if ($wishlist->getUser() !== $this) {
-            $wishlist->setUser($this);
-        }
-
-        $this->wishlist = $wishlist;
-
-        return $this;
-    }
-
     public function getProfilePicture(): ?string
     {
         return $this->profilePicture;
@@ -281,6 +265,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($review->getUser() === $this) {
                 $review->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, WishlistGame>
+     */
+    public function getWishlistGames(): Collection
+    {
+        return $this->wishlistGames;
+    }
+
+    public function addWishlistGame(WishlistGame $wishlistGame): static
+    {
+        if (!$this->wishlistGames->contains($wishlistGame)) {
+            $this->wishlistGames->add($wishlistGame);
+            $wishlistGame->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeWishlistGame(WishlistGame $wishlistGame): static
+    {
+        if ($this->wishlistGames->removeElement($wishlistGame)) {
+            // set the owning side to null (unless already changed)
+            if ($wishlistGame->getUser() === $this) {
+                $wishlistGame->setUser(null);
             }
         }
 

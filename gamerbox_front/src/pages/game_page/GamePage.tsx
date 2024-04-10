@@ -12,6 +12,8 @@ import { selectToken, selectUserId } from "../../redux/userSlice";
 import { useSelector } from "react-redux";
 import useFetch from "../../services/useFetch";
 import GamerboxApi from "../../services/gamerbox_api";
+import ReviewModal from "../../components/review_modal/ReviewModal";
+import { API_URL } from "../../../config.ts";
 
 type GameInfo = {
     igdbId: number;
@@ -31,6 +33,8 @@ type Tag = {
     name: string;
 };
 
+const baseURL = API_URL;
+
 function GamePage() {
     const { gameId } = useParams();
     const [game, setGame] = useState<GameInfo | null>();
@@ -43,7 +47,7 @@ function GamePage() {
     const navigate = useNavigate();
 
     const { data, loading, error } = useFetch<GameInfo>(
-        `https://127.0.0.1:8000/api/game/${gameId}`,
+        `${baseURL}game/${gameId}`,
         "GET"
     );
 
@@ -99,11 +103,18 @@ function GamePage() {
                             <h3>
                                 {developers} - {releaseDate}
                             </h3>
-                            {gameId && userId ? (
-                                <WishlistBtn gameId={parseInt(gameId)} />
-                            ) : (
-                                <></>
-                            )}
+                            <div className="game-top-info-data-btn">
+                                {gameId && userId ? (
+                                    <WishlistBtn gameId={parseInt(gameId)} />
+                                ) : (
+                                    <></>
+                                )}
+                                {gameId && userId ? (
+                                    <ReviewBtn gameId={parseInt(gameId)} />
+                                ) : (
+                                    <></>
+                                )}
+                            </div>
                         </section>
                         <section className="game-top-info-note"></section>
                     </section>
@@ -148,7 +159,6 @@ function GamePage() {
                     </section>
                     <section className="game-bottom-category">
                         <h4>Last reviews :</h4>
-                        {/* les reviews */}
                         {gameId ? (
                             <ReviewList igdbId={parseInt(gameId)} />
                         ) : (
@@ -163,7 +173,7 @@ function GamePage() {
 
 type ReviewData = {
     id: number;
-    user: [id: number, pseudonym: string, profilePicture: string];
+    user: {id: number, pseudonym: string, profilePicture: string};
     content: string;
     liked: boolean | null;
     mitigate: boolean | null;
@@ -183,29 +193,9 @@ function ReviewList({ igdbId }: ReviewListProsp) {
         loading: reviewLoading,
         error: reviewError,
     } = useFetch<ReviewData[]>(
-        `https://127.0.0.1:8000/api/game/review/${igdbId}?offset=${offset}`,
+        `${baseURL}game/review/${igdbId}?offset=${offset}`,
         "GET"
     );
-
-    // useEffect(() => {
-    //     if (reviewData) {
-    //         let newValues: Array<any> = [];
-    //         if (reviewData && reviewData.length > 0) {
-    //             newValues.push(...reviewData);
-    //         }
-
-    //         if (reviewList) {
-    //             newValues.push(...reviewList);
-    //         }
-
-    //         setReviewList(newValues);
-    //         setShowBtn(true);
-    //         if (reviewData.length === 0) {
-    //             setShowBtn(false);
-    //         }
-    //         console.log(reviewData)
-    //     }
-    // }, [reviewData, offset]);
 
     useEffect(() => {
         if (reviewData) {
@@ -224,7 +214,6 @@ function ReviewList({ igdbId }: ReviewListProsp) {
             if (reviewData.length === 0) {
                 setShowBtn(false);
             }
-            console.log(reviewData);
         }
     }, [reviewData, offset]);
 
@@ -250,12 +239,12 @@ function ReviewList({ igdbId }: ReviewListProsp) {
                 {reviewList?.map((review: ReviewData, index: number) => (
                     <GameReview
                         key={`$${review.id}-${index}`}
-                        pseudonym={review.user[1]}
+                        pseudonym={review.user.pseudonym}
                         content={review.content}
-                        profilPicture={review.user[2]}
+                        profilPicture={review.user.profilePicture}
                         liked={review.liked}
                         mitigate={review.mitigate}
-                        userId={review.user[0]}
+                        userId={review.user.id}
                     />
                 ))}
                 {showBtn ? (
@@ -277,10 +266,9 @@ type WishlistBtnProsp = {
 };
 
 type WishlistGame = {
-    igdbId: number;
-    name: string;
-    slug: string;
-    cover: string | null;
+    Game: {igdbId: number, name: string, slug: string, cover: string | null},
+    User: {id: number, pseudonym: string},
+    addedDate: Date
 };
 function WishlistBtn({ gameId }: WishlistBtnProsp) {
     const token = useSelector(selectToken);
@@ -292,15 +280,12 @@ function WishlistBtn({ gameId }: WishlistBtnProsp) {
         data: wishlistData,
         loading: wishlistLoading,
         error: wishlistError,
-    } = useFetch<WishlistGame[]>(
-        `https://127.0.0.1:8000/api/user/wishlist/${userId}`,
-        "GET"
-    );
+    } = useFetch<WishlistGame[]>(`${baseURL}user/wishlist/${userId}`, "GET");
 
     useEffect(() => {
         if (wishlistData) {
             const finder = wishlistData.find(
-                (game: WishlistGame) => game.igdbId === gameId
+                (element: WishlistGame) => element.Game.igdbId === gameId
             );
             if (finder) {
                 setVisible(3);
@@ -373,6 +358,106 @@ function WishlistBtn({ gameId }: WishlistBtnProsp) {
         return (
             <button className="wishListBtn" onClick={deleteGame}>
                 delete from wishlist
+            </button>
+        );
+    }
+}
+
+type ReviewBtnProps = {
+    gameId: number | undefined;
+};
+
+function ReviewBtn({ gameId }: ReviewBtnProps) {
+    const token = useSelector(selectToken);
+    const userId = useSelector(selectUserId);
+    const [visible, setVisible] = useState<number | undefined>();
+    const [modalVisibility, setModalVisibility] = useState<boolean>(false);
+    const [reviewId, setReviewId] = useState<number>();
+    const navigate = useNavigate();
+
+    const {
+        data: reviewBtnData,
+        loading: reviewBtnLoading,
+        error: reviewBtnError,
+    } = useFetch<ReviewData[]>(`${baseURL}review/get/${userId}`, "GET");
+
+    useEffect(() => {
+        if (reviewBtnData) {
+            const finder = reviewBtnData.find(
+                (element: ReviewData) => element.game.igdbId === gameId
+            );
+            if (finder) {
+                setReviewId(finder.id);
+                setVisible(3);
+            } else {
+                setVisible(2);
+            }
+        } else {
+            setVisible(2);
+        }
+    }, [userId, reviewBtnData, gameId]);
+
+    function showReviewModal() {
+        setModalVisibility(true);
+    }
+
+    function hideReviewModal() {
+        setModalVisibility(false);
+    }
+
+    const callAPIremoveReview = async (reviewId: number, tokenJWT: string) => {
+        try {
+            const res = await GamerboxApi.removeReview(reviewId, tokenJWT);
+            if (res) {
+                navigate(0);
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const deleteReview = () => {
+        if (token && reviewId) {
+            callAPIremoveReview(reviewId, token);
+        }
+    };
+
+    if (reviewBtnError) {
+        console.log(reviewBtnError);
+    }
+
+    if (reviewBtnLoading) {
+        return (
+            <div className="profile-top-info-data-numbers">
+                <div className="loader"></div>
+            </div>
+        );
+    }
+
+    if (visible === 2) {
+        return (
+            <div>
+                <button className="wishListBtn" onClick={showReviewModal}>
+                    Add Review
+                </button>
+                {gameId ? (
+                    <ReviewModal
+                        onClose={hideReviewModal}
+                        token={token}
+                        gameId={gameId}
+                        visible={modalVisibility}
+                    />
+                ) : (
+                    <></>
+                )}
+            </div>
+        );
+    }
+
+    if (visible === 3) {
+        return (
+            <button className="wishListBtn" onClick={deleteReview}>
+                delete review
             </button>
         );
     }

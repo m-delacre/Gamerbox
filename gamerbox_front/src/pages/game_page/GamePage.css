@@ -95,12 +95,9 @@
     margin-bottom: 20px;
 }
 
-.game-top-info-note {
-    width: 20%;
-    height: 100%;
+.game-top-info-data-btn {
     display: flex;
-    align-items: center;
-    align-items: center;
+    gap: 20px;
 }
 
 .game-bottom {

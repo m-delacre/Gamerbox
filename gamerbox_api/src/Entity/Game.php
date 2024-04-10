@@ -62,19 +62,19 @@ class Game
     #[Groups(['full_game'])]
     private Collection $genre;
 
-    #[ORM\ManyToMany(targetEntity: Wishlist::class, mappedBy: 'game')]
-    private Collection $wishlists;
-
     #[ORM\OneToMany(targetEntity: Review::class, mappedBy: 'game')]
     private Collection $reviews;
+
+    #[ORM\OneToMany(targetEntity: WishlistGame::class, mappedBy: 'Game')]
+    private Collection $wishlistGames;
 
     public function __construct()
     {
         $this->modes = new ArrayCollection();
         $this->theme = new ArrayCollection();
         $this->genre = new ArrayCollection();
-        $this->wishlists = new ArrayCollection();
         $this->reviews = new ArrayCollection();
+        $this->wishlistGames = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -251,33 +251,6 @@ class Game
     }
 
     /**
-     * @return Collection<int, Wishlist>
-     */
-    public function getWishlists(): Collection
-    {
-        return $this->wishlists;
-    }
-
-    public function addWishlist(Wishlist $wishlist): static
-    {
-        if (!$this->wishlists->contains($wishlist)) {
-            $this->wishlists->add($wishlist);
-            $wishlist->addGame($this);
-        }
-
-        return $this;
-    }
-
-    public function removeWishlist(Wishlist $wishlist): static
-    {
-        if ($this->wishlists->removeElement($wishlist)) {
-            $wishlist->removeGame($this);
-        }
-
-        return $this;
-    }
-
-    /**
      * @return Collection<int, Review>
      */
     public function getReviews(): Collection
@@ -301,6 +274,36 @@ class Game
             // set the owning side to null (unless already changed)
             if ($review->getGame() === $this) {
                 $review->setGame(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, WishlistGame>
+     */
+    public function getWishlistGames(): Collection
+    {
+        return $this->wishlistGames;
+    }
+
+    public function addWishlistGame(WishlistGame $wishlistGame): static
+    {
+        if (!$this->wishlistGames->contains($wishlistGame)) {
+            $this->wishlistGames->add($wishlistGame);
+            $wishlistGame->setGame($this);
+        }
+
+        return $this;
+    }
+
+    public function removeWishlistGame(WishlistGame $wishlistGame): static
+    {
+        if ($this->wishlistGames->removeElement($wishlistGame)) {
+            // set the owning side to null (unless already changed)
+            if ($wishlistGame->getGame() === $this) {
+                $wishlistGame->setGame(null);
             }
         }
 

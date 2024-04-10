@@ -63,6 +63,7 @@
     align-items: center;
     width: 30%;
     height: 100%;
+    padding-top: 20px;
 }
 
 .profile-top-info-picture h2 {
@@ -77,14 +78,14 @@
     align-items: center;
     width: 70%;
     height: 100%;
-    gap: 40px;
+    gap: 0px;
     position: relative;
 }
 
 .profile-top-info-data button {
     position: absolute;
     bottom: 50px;
-    left: 50px;
+    left: 0px;
     width: fit-content;
     height: fit-content;
     padding: 10px 20px;
@@ -105,17 +106,17 @@
 .profile-top-info-data-top {
     display: flex;
     flex-direction: row;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
-    width: 70%;
+    width: 100%;
     height: 100%;
-    gap: 40px;
+    gap: 30px;
 }
 
 .profile-top-info-data-numbers {
     width: fit-content;
     height: fit-content;
-    padding: 30px;
+    padding: 15px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -136,12 +137,12 @@
     width: 1000px;
     height: fit-content;
     position: relative;
-    margin-bottom: 100px;
+    margin-bottom: 50px;
 }
 
 #profile-bottom-wishlistbtn{
     position: absolute;
-    top: 40px;
+    top: 30px;
     right: 0;
     width: fit-content;
     height: fit-content;
@@ -168,7 +169,7 @@
 .profile-bottom h4 {
     font-size: 25px;
     color: #b000bf;
-    padding-bottom: 30px;
+    padding-bottom: 20px;
     border-bottom: 2px solid #b000bf;
 }
 

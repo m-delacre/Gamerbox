@@ -1,3 +1,5 @@
+import { API_URL } from '../../config.ts';
+
 type GameInfo = {
     igdbId: number;
     name: string;
@@ -58,9 +60,16 @@ type ReviewData = {
     game: { igdbId: number; name: string };
 };
 
+type reviewDataForm = {
+    content: string,
+    liked: boolean | null,
+    mitigate: boolean | null
+}
+
+const baseURL = API_URL;
 class GamerboxApi {
     static async getGame(id: string | undefined) {
-        const url = `https://127.0.0.1:8000/api/game/${id}`;
+        const url = `${baseURL}game/${id}`;
 
         try {
             const response = await fetch(url, {
@@ -88,7 +97,7 @@ class GamerboxApi {
         offset: number | undefined,
         limit: number | undefined
     ) {
-        const url = `https://127.0.0.1:8000/api/search`;
+        const url = `${baseURL}search`;
         const data = {
             search: value,
             offset: offset,
@@ -118,7 +127,7 @@ class GamerboxApi {
     }
 
     static async login(email: string, password: string) {
-        const url = `https://127.0.0.1:8000/api/login_check`;
+        const url = `${baseURL}login_check`;
         const data = {
             username: email,
             password: password,
@@ -147,7 +156,7 @@ class GamerboxApi {
     }
 
     static async register(email: string, password: string, pseudonym: string, picture: File | null) {
-        const url = `https://127.0.0.1:8000/api/register`;
+        const url = `${baseURL}register`;
     
         let data = JSON.stringify({
            "email": email,
@@ -181,7 +190,7 @@ class GamerboxApi {
     }
 
     static async getLoggedUserInfo(token: string) {
-        const url = `https://127.0.0.1:8000/api/user/logged`;
+        const url = `${baseURL}user/logged`;
         const userToken = token;
 
         try {
@@ -207,7 +216,7 @@ class GamerboxApi {
     }
 
     static async getUserInfo(id: number) {
-        const url = `https://127.0.0.1:8000/api/user/${id}`;
+        const url = `${baseURL}user/${id}`;
 
         try {
             const response = await fetch(url, {
@@ -231,7 +240,7 @@ class GamerboxApi {
     }
 
     static async addToWishlist(igdbId: number, userToken: string) {
-        const url = `https://127.0.0.1:8000/api/game/whishlist/${igdbId}`;
+        const url = `${baseURL}game/whishlist/${igdbId}`;
 
         try {
             const response = await fetch(url, {
@@ -254,7 +263,7 @@ class GamerboxApi {
     }
 
     static async removeFromWishlist(igdbId: number, userToken: string) {
-        const url = `https://127.0.0.1:8000/api/game/whishlist/remove/${igdbId}`;
+        const url = `${baseURL}game/whishlist/remove/${igdbId}`;
 
         try {
             const response = await fetch(url, {
@@ -277,7 +286,7 @@ class GamerboxApi {
     }
 
     static async getUserWishlist(userId: number) {
-        const url = `https://127.0.0.1:8000/api/user/wishlist/${userId}`;
+        const url = `${baseURL}user/wishlist/${userId}`;
 
         try {
             const response = await fetch(url, {
@@ -301,7 +310,7 @@ class GamerboxApi {
     }
 
     static async getUserFollowing(userId: number) {
-        const url = `https://127.0.0.1:8000/api/user/follow/${userId}`;
+        const url = `${baseURL}user/follow/${userId}`;
 
         try {
             const response = await fetch(url, {
@@ -325,7 +334,7 @@ class GamerboxApi {
     }
 
     static async getUserFollowers(userId: number) {
-        const url = `https://127.0.0.1:8000/api/user/follower/${userId}`;
+        const url = `${baseURL}user/follower/${userId}`;
 
         try {
             const response = await fetch(url, {
@@ -349,7 +358,7 @@ class GamerboxApi {
     }
 
     static async addFollow(userToAddId: number, userToken: string) {
-        const url = `https://127.0.0.1:8000/api/follow/add/${userToAddId}`;
+        const url = `${baseURL}follow/add/${userToAddId}`;
 
         try {
             const response = await fetch(url, {
@@ -372,7 +381,7 @@ class GamerboxApi {
     }
 
     static async removeFollow(userToRemoveId: number, userToken: string) {
-        const url = `https://127.0.0.1:8000/api/follow/remove/${userToRemoveId}`;
+        const url = `${baseURL}follow/remove/${userToRemoveId}`;
 
         try {
             const response = await fetch(url, {
@@ -395,7 +404,7 @@ class GamerboxApi {
     }
 
     static async getGameReview(offset: number, igdbId: number) {
-        const url = `https://127.0.0.1:8000/api/game/review/${igdbId}`;
+        const url = `${baseURL}game/review/${igdbId}`;
     
         let data = {
            "offset": offset,
@@ -422,6 +431,85 @@ class GamerboxApi {
             return null;
         }
     }
+
+    static async addReview(gameId: number, userToken: string, reaction: 'like' | 'dislike' | 'mitigate', content: string ) {
+        const url = `${baseURL}review/add/${gameId}`;
+
+        let data: reviewDataForm = {
+            "content":content,
+            "liked": false,
+            "mitigate": false
+        }
+        switch (reaction) {
+            case 'like':
+                data = {
+                    "content":content,
+                    "liked": true,
+                    "mitigate": false
+                }
+              break;
+            case 'dislike':
+                data = {
+                    "content":content,
+                    "liked": false,
+                    "mitigate": false
+                }
+                break;
+            case 'mitigate':
+                data = {
+                    "content":content,
+                    "liked": null,
+                    "mitigate": true
+                }
+              break;
+            default:
+              console.log(`Error in form`);
+          }
+
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${userToken}`,
+                },
+                body: JSON.stringify(data),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            return true;
+        } catch (error) {
+            console.error("Error :", error);
+            return null;
+        }
+    }
+
+    static async removeReview(reviewId: number, userToken: string) {
+        const url = `${baseURL}review/delete/${reviewId}`;
+
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${userToken}`,
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            return true;
+        } catch (error) {
+            console.error("Error :", error);
+            return null;
+        }
+    }
+    
 }
 
 export default GamerboxApi;

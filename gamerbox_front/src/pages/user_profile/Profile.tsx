@@ -14,6 +14,10 @@ import {
 import useFetch from "../../services/useFetch";
 import GamerboxApi from "../../services/gamerbox_api";
 import GameReviewProfile from "../../components/game_review_profile/GameReviewProfile";
+import { API_URL, API_IMG_URL } from "../../../config.ts";
+
+const baseURL = API_URL;
+const imgURL = API_IMG_URL;
 
 type UserInfo = {
     id: number;
@@ -24,10 +28,9 @@ type UserInfo = {
 };
 
 type WishlistGame = {
-    igdbId: number;
-    name: string;
-    slug: string;
-    cover: string | null;
+    Game: {igdbId: number, name: string, slug: string, cover: string | null},
+    User: {id: number, pseudonym: string},
+    addedDate: Date
 };
 
 type BtnFollowProps = {
@@ -45,7 +48,7 @@ export default function Profile() {
     const [profilePicture, setProfilePicture] = useState<string | null>();
     const navigate = useNavigate();
     const { data, loading, error } = useFetch<UserInfo>(
-        `https://127.0.0.1:8000/api/user/${userId}`,
+        `${baseURL}user/${userId}`,
         "GET"
     );
 
@@ -58,9 +61,7 @@ export default function Profile() {
             setUserInfo(data);
             setUsername(data.pseudonym);
             if (data.profilePicture) {
-                setProfilePicture(
-                    `https://127.0.0.1:8000/${data.profilePicture}`
-                );
+                setProfilePicture(`${imgURL}${data.profilePicture}`);
             }
         }
     }, [userId, data]);
@@ -74,7 +75,7 @@ export default function Profile() {
     }
 
     function goBack() {
-        navigate(-1)
+        navigate(-1);
     }
 
     if (data === null) {
@@ -83,7 +84,9 @@ export default function Profile() {
                 <Header />
                 <main className="profile-page-notfound">
                     <h1>User not found 🥲</h1>
-                    <button className="btn-return" onClick={goBack}>Return</button>
+                    <button className="btn-return" onClick={goBack}>
+                        Return
+                    </button>
                 </main>
             </div>
         );
@@ -132,7 +135,11 @@ export default function Profile() {
                 </section>
                 <section className="profile-bottom">
                     <h4>Reviews:</h4>
-                    {userId ? <ReviewList userId={parseInt(userId)} /> : <p>No reviews 😕</p>}
+                    {userId ? (
+                        <ReviewList userId={parseInt(userId)} />
+                    ) : (
+                        <p>No reviews 😕</p>
+                    )}
                 </section>
             </main>
         </div>
@@ -141,11 +148,11 @@ export default function Profile() {
 
 type ReviewData = {
     id: number;
-    user: {id: number, pseudonym: string, profilePicture: string};
+    user: { id: number; pseudonym: string; profilePicture: string };
     content: string;
     liked: boolean | null;
     mitigate: boolean | null;
-    game: { igdbId: number; name: string, cover: string };
+    game: { igdbId: number; name: string; cover: string };
 };
 
 type ReviewListProsp = {
@@ -158,10 +165,7 @@ function ReviewList({ userId }: ReviewListProsp) {
         data: reviewData,
         loading: reviewLoading,
         error: reviewError,
-    } = useFetch<ReviewData[]>(
-        `https://127.0.0.1:8000/api/review/get/${userId}`,
-        "GET"
-    );
+    } = useFetch<ReviewData[]>(`${baseURL}review/get/${userId}`, "GET");
 
     useEffect(() => {
         if (reviewData) {
@@ -207,7 +211,7 @@ function BtnFollow({ pageUserId }: BtnFollowProps) {
     const [connectedUserFollowList, setConnectedUserFollowList] =
         useState<Array<FollowUser> | null>();
     const { data, loading, error } = useFetch<FollowUser[]>(
-        `https://127.0.0.1:8000/api/user/follow/${connectedUserId}`,
+        `${baseURL}user/follow/${connectedUserId}`,
         "GET"
     );
     const token = useSelector(selectToken);
@@ -287,7 +291,7 @@ interface UserDataProps {
 function FollowData({ userId }: UserDataProps) {
     const [follow, setFollow] = useState<Array<FollowUser>>([]);
     const { data, loading, error } = useFetch<FollowUser[]>(
-        `https://127.0.0.1:8000/api/user/follow/${userId}`,
+        `${baseURL}user/follow/${userId}`,
         "GET"
     );
 
@@ -322,7 +326,7 @@ function FollowData({ userId }: UserDataProps) {
 function FollowerData({ userId }: UserDataProps) {
     const [follower, setFollower] = useState<Array<FollowUser>>([]);
     const { data, loading, error } = useFetch<FollowUser[]>(
-        `https://127.0.0.1:8000/api/user/follower/${userId}`,
+        `${baseURL}user/follower/${userId}`,
         "GET"
     );
 
@@ -357,7 +361,7 @@ function FollowerData({ userId }: UserDataProps) {
 function ReviewsData({ userId }: UserDataProps) {
     const [reviewNum, setReviewNum] = useState<number>(0);
     const { data, loading, error } = useFetch<FollowUser[]>(
-        `https://127.0.0.1:8000/api/review/get/${userId}`,
+        `${baseURL}review/get/${userId}`,
         "GET"
     );
 
@@ -392,7 +396,7 @@ function ReviewsData({ userId }: UserDataProps) {
 function WishlistSection({ userId }: UserDataProps) {
     const [wishlist, setWishlist] = useState<Array<WishlistGame>>();
     const { data, loading, error } = useFetch<WishlistGame[]>(
-        `https://127.0.0.1:8000/api/user/wishlist/${userId}`,
+        `${baseURL}user/wishlist/${userId}`,
         "GET"
     );
 
@@ -423,16 +427,16 @@ function WishlistSection({ userId }: UserDataProps) {
     if (wishlist) {
         return (
             <div className="wishlist">
-                {wishlist.map((game: WishlistGame) => (
+                {wishlist.map((element: WishlistGame) => (
                     <Link
-                        to={`/game/${game.igdbId}`}
+                        to={`/game/${element.Game.igdbId}`}
                         className="wishlistGame"
-                        key={`${game.name}-${game.igdbId}`}
+                        key={`${element.Game.name}-${element.Game.igdbId}`}
                     >
-                        {game.cover != null ? (
+                        {element.Game.cover != null ? (
                             <img
                                 src={ImageModifier.replaceThumbWith1080p(
-                                    game.cover
+                                    element.Game.cover
                                 )}
                             />
                         ) : (

@@ -6,6 +6,9 @@ import ImageModifier from "../../services/imageModifier";
 import noPicture from "../../assets/img_not_available.jpg";
 import "./Wishlistpage.css";
 import useFetch from "../../services/useFetch";
+import { API_URL } from '../../../config.ts';
+
+const baseURL = API_URL;
 
 type UserInfo = {
     id: number;
@@ -15,10 +18,9 @@ type UserInfo = {
 };
 
 type WishlistGame = {
-    igdbId: number;
-    name: string;
-    slug: string;
-    cover: string | null;
+    Game: {igdbId: number, name: string, slug: string, cover: string | null},
+    User: {id: number, pseudonym: string},
+    addedDate: Date
 };
 
 export default function WishlistPage() {
@@ -58,7 +60,7 @@ interface WishlistDataProps {
 function Wishlist({ pageUserId }: WishlistDataProps) {
     const [wishlist, setWishlist] = useState<Array<WishlistGame>>();
     const { data, loading, error } = useFetch<WishlistGame[]>(
-        `https://127.0.0.1:8000/api/user/wishlist/${pageUserId}`,
+        `${baseURL}user/wishlist/${pageUserId}`,
         "GET"
     );
 
@@ -90,17 +92,17 @@ function Wishlist({ pageUserId }: WishlistDataProps) {
 
     return (
         <div className="wishlistpage-section-games">
-            {wishlist?.map((game: WishlistGame) => (
+            {wishlist?.map((element: WishlistGame) => (
                 <Link
-                    to={`/game/${game.igdbId}`}
+                    to={`/game/${element.Game.igdbId}`}
                     className="wishlistpage-section-games-game"
-                    key={`${game.name}-${game.igdbId}`}
+                    key={`${element.Game.name}-${element.Game.igdbId}`}
                 >
                     <div className="wishlistpage-section-games-game-top">
-                        {game.cover != null ? (
+                        {element.Game.cover != null ? (
                             <img
                                 src={ImageModifier.replaceThumbWith1080p(
-                                    game.cover
+                                    element.Game.cover
                                 )}
                             />
                         ) : (
@@ -108,7 +110,7 @@ function Wishlist({ pageUserId }: WishlistDataProps) {
                         )}
                     </div>
                     <p className="wishlistpage-section-games-game-title">
-                        {game.name}
+                        {element.Game.name}
                     </p>
                 </Link>
             ))}

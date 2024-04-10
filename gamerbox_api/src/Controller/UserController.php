@@ -67,17 +67,17 @@ class UserController extends AbstractController
     #[Route('/api/user/wishlist/{id}', name: 'api_user_wishlist', methods: ['GET'])]
     public function getUserWishlist(User $user, SerializerInterface $serializer): JsonResponse
     {
-        $wishlist = $user->getWishlist();
+        $wishlist = $user->getWishlistGames();
 
         if (!$wishlist) {
-            return new JsonResponse('pas trouvé', Response::HTTP_NOT_FOUND, [], true);
+            return new JsonResponse([], Response::HTTP_OK, [], false);
         }
 
         $context = (new ObjectNormalizerContextBuilder())
             ->withGroups('wishlist_game')
             ->toArray();
 
-        $serializedWishlist = $serializer->serialize($wishlist->getGame(), 'json', $context);
+        $serializedWishlist = $serializer->serialize($wishlist, 'json', $context);
 
         return new JsonResponse($serializedWishlist, Response::HTTP_CREATED, [], true);
     }

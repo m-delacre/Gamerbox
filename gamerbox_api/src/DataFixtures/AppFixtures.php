@@ -6,7 +6,7 @@ use App\Entity\Follow;
 use App\Entity\Game;
 use App\Entity\Review;
 use App\Entity\User;
-use App\Entity\Wishlist;
+use App\Entity\WishlistGame;
 use App\Service\GameBuilder;
 use DateTime;
 use Doctrine\Bundle\FixturesBundle\Fixture;
@@ -58,13 +58,17 @@ class AppFixtures extends Fixture
         $user->setProfilePicture("uploads/profilePicture/mario.jpg");
         $manager->persist($user);
 
-        $wishlist = new Wishlist();
+        $wishlist = new WishlistGame();
         $wishlist->setUser($user);
+        $wishlist->setGame($game);
         $wishlist->setAddedDate(new DateTime());
-        $wishlist->addGame($game);
-        $wishlist->addGame($game4);
-        $wishlist->addGame($game5);
         $manager->persist($wishlist);
+
+        $wishlist1 = new WishlistGame();
+        $wishlist1->setUser($user);
+        $wishlist1->setGame($game2);
+        $wishlist1->setAddedDate(new DateTime());
+        $manager->persist($wishlist1);
 
         $user1 = new User();
         $user1->setEmail('redsky@gamerbox.com');
@@ -74,29 +78,12 @@ class AppFixtures extends Fixture
         $user1->setProfilePicture("uploads/profilePicture/sonic.jpg");
         $manager->persist($user1);
 
-        $wishlist1 = new Wishlist();
-        $wishlist1->setUser($user1);
-        $wishlist1->setAddedDate(new DateTime());
-        $wishlist1->addGame($game);
-        $wishlist1->addGame($game3);
-        $wishlist1->addGame($game4);
-        $wishlist1->addGame($game5);
-        $manager->persist($wishlist1);
-
         $user2 = new User();
         $user2->setEmail('john@gamerbox.com');
         $user2->setPassword($this->passwordHasher->hashPassword($user2, 'johngamerbox'));
         $user2->setRoles(['ROLE_USER']);
         $user2->setPseudonym('john');
         $manager->persist($user2);
-
-        $wishlist2 = new Wishlist();
-        $wishlist2->setUser($user2);
-        $wishlist2->setAddedDate(new DateTime());
-        $wishlist2->addGame($game);
-        $wishlist2->addGame($game2);
-        $wishlist2->addGame($game5);
-        $manager->persist($wishlist2);
 
         $user3 = new User();
         $user3->setEmail('robot@gamerbox.com');
@@ -105,14 +92,6 @@ class AppFixtures extends Fixture
         $user3->setPseudonym('Rob0t');
         $user3->setProfilePicture("uploads/profilePicture/robot.png");
         $manager->persist($user3);
-
-        $wishlist3 = new Wishlist();
-        $wishlist3->setUser($user3);
-        $wishlist3->setAddedDate(new DateTime());
-        $wishlist3->addGame($game2);
-        $wishlist3->addGame($game1);
-        $wishlist3->addGame($game4);
-        $manager->persist($wishlist3);
 
         $followList = new Follow();
         $followList->setFollower($user);
