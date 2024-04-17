@@ -19,11 +19,11 @@ class Game
     private ?int $id = null;
 
     #[ORM\Column]
-    #[Groups(['full_game', 'wishlist_game', 'review'])]
+    #[Groups(['full_game', 'wishlist_game', 'review', 'review_full'])]
     private ?int $igdbId = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['full_game', 'wishlist_game', 'review'])]
+    #[Groups(['full_game', 'wishlist_game', 'review', 'review_full'])]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
@@ -47,7 +47,7 @@ class Game
     private ?string $banner = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['full_game', 'wishlist_game', 'review'])]
+    #[Groups(['full_game', 'wishlist_game', 'review', 'review_full'])]
     private ?string $cover = null;
 
     #[ORM\ManyToMany(targetEntity: GameMode::class, inversedBy: 'games')]

@@ -2,8 +2,6 @@
 
 namespace App\Controller;
 
-use App\Entity\Game;
-use App\Entity\Wishlist;
 use App\Entity\WishlistGame;
 use App\Repository\GameRepository;
 use App\Repository\ReviewRepository;
@@ -96,7 +94,7 @@ class GameController extends AbstractController
                 ->withGroups('wishlist_game')
                 ->toArray();
             $serializedGame = $serializer->serialize($newWishlist, 'json', $context);
-            // dd($wishlist, $game, $user, $serializedGame);
+
             return new JsonResponse($serializedGame, Response::HTTP_OK, [], true);
         }
 
@@ -107,7 +105,7 @@ class GameController extends AbstractController
 
     #[IsGranted('ROLE_USER')]
     #[Route('/api/game/whishlist/remove/{igdbId}', name: 'api_game_remove_wishlist', methods: ['POST'])]
-    public function removeGameFromWishlist(int $igdbId, WishlistGameRepository $wishlistGameRepository, EntityManagerInterface $em, GameRepository $gameRepository, GameBuilder $gameBuilder): JsonResponse
+    public function removeGameFromWishlist(int $igdbId, WishlistGameRepository $wishlistGameRepository, EntityManagerInterface $em, GameRepository $gameRepository): JsonResponse
     {
         $game = $gameRepository->findOneByIgdbId($igdbId);
         $user = $this->getUser();
@@ -132,7 +130,7 @@ class GameController extends AbstractController
         $game = $gameRepository->findOneByIgdbId($gameId);
         $offset = $request->query->get('offset');
         if ($game && $offset) {
-            $reviews = $reviewRepository->loadMoreReview($game->getId(), $offset, $em);
+            $reviews = $reviewRepository->loadMoreGameReview($game->getId(), $offset, $em);
 
             if (!$reviews) {
                 return new JsonResponse([], Response::HTTP_OK, [], false);
@@ -147,7 +145,7 @@ class GameController extends AbstractController
         }
 
         if ($game && !$offset) {
-            $reviews = $reviewRepository->findByGame($game->getId());
+            $reviews = $reviewRepository->loadMoreGameReview($game->getId(), 0, $em);
             if (!$reviews) {
                 return new JsonResponse([], Response::HTTP_OK, [], false);
             }
@@ -160,6 +158,8 @@ class GameController extends AbstractController
             return new JsonResponse($serializedReviews, Response::HTTP_OK, [], true);
         }
 
-        return new JsonResponse('Game not found', Response::HTTP_NOT_FOUND, [], true);
+        if (!$game) {
+            return new JsonResponse([], Response::HTTP_OK, [], true);
+        }
     }
 }

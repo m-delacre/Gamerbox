@@ -4,6 +4,7 @@ namespace App\DataFixtures;
 
 use App\Entity\Follow;
 use App\Entity\Game;
+use App\Entity\ReactionEnum;
 use App\Entity\Review;
 use App\Entity\User;
 use App\Entity\WishlistGame;
@@ -53,22 +54,10 @@ class AppFixtures extends Fixture
         $user = new User();
         $user->setEmail('athos@gamerbox.com');
         $user->setPassword($this->passwordHasher->hashPassword($user, 'gamerbox'));
-        $user->setRoles(['ROLE_ADMIN','ROLE_USER']);
+        $user->setRoles(['ROLE_ADMIN', 'ROLE_USER']);
         $user->setPseudonym('AthosAtreides');
         $user->setProfilePicture("uploads/profilePicture/mario.jpg");
         $manager->persist($user);
-
-        $wishlist = new WishlistGame();
-        $wishlist->setUser($user);
-        $wishlist->setGame($game);
-        $wishlist->setAddedDate(new DateTime());
-        $manager->persist($wishlist);
-
-        $wishlist1 = new WishlistGame();
-        $wishlist1->setUser($user);
-        $wishlist1->setGame($game2);
-        $wishlist1->setAddedDate(new DateTime());
-        $manager->persist($wishlist1);
 
         $user1 = new User();
         $user1->setEmail('redsky@gamerbox.com');
@@ -92,6 +81,54 @@ class AppFixtures extends Fixture
         $user3->setPseudonym('Rob0t');
         $user3->setProfilePicture("uploads/profilePicture/robot.png");
         $manager->persist($user3);
+
+        $wishlist = new WishlistGame();
+        $wishlist->setUser($user);
+        $wishlist->setGame($game);
+        $wishlist->setAddedDate(new DateTime());
+        $manager->persist($wishlist);
+
+        $wishlist1 = new WishlistGame();
+        $wishlist1->setUser($user);
+        $wishlist1->setGame($game1);
+        $wishlist1->setAddedDate(new DateTime());
+        $manager->persist($wishlist1);
+
+        $wishlist2 = new WishlistGame();
+        $wishlist2->setUser($user);
+        $wishlist2->setGame($game2);
+        $wishlist2->setAddedDate(new DateTime());
+        $manager->persist($wishlist2);
+
+        $wishlist3 = new WishlistGame();
+        $wishlist3->setUser($user2);
+        $wishlist3->setGame($game);
+        $wishlist3->setAddedDate(new DateTime());
+        $manager->persist($wishlist3);
+
+        $wishlist4 = new WishlistGame();
+        $wishlist4->setUser($user2);
+        $wishlist4->setGame($game2);
+        $wishlist4->setAddedDate(new DateTime());
+        $manager->persist($wishlist4);
+
+        $wishlist5 = new WishlistGame();
+        $wishlist5->setUser($user2);
+        $wishlist5->setGame($game3);
+        $wishlist5->setAddedDate(new DateTime());
+        $manager->persist($wishlist5);
+
+        $wishlist6 = new WishlistGame();
+        $wishlist6->setUser($user3);
+        $wishlist6->setGame($game);
+        $wishlist6->setAddedDate(new DateTime());
+        $manager->persist($wishlist6);
+
+        $wishlist7 = new WishlistGame();
+        $wishlist7->setUser($user3);
+        $wishlist7->setGame($game4);
+        $wishlist7->setAddedDate(new DateTime());
+        $manager->persist($wishlist7);
 
         $followList = new Follow();
         $followList->setFollower($user);
@@ -117,48 +154,42 @@ class AppFixtures extends Fixture
         $review->setUser($user);
         $review->setContent("trop cool");
         $review->setGame($game5);
-        $review->setLiked(true);
-        $review->setMitigate(false);
+        $review->setReaction(ReactionEnum::like);
         $manager->persist($review);
 
         $review1 = new Review();
         $review1->setUser($user1);
         $review1->setContent("pas ouf");
         $review1->setGame($game5);
-        $review1->setLiked(null);
-        $review1->setMitigate(true);
+        $review1->setReaction(ReactionEnum::mitigate);
         $manager->persist($review1);
 
         $review2 = new Review();
         $review2->setUser($user2);
         $review2->setContent("naze");
         $review2->setGame($game5);
-        $review2->setLiked(false);
-        $review2->setMitigate(false);
+        $review2->setReaction(ReactionEnum::dislike);
         $manager->persist($review2);
 
         $review3 = new Review();
         $review3->setUser($user3);
         $review3->setContent("que dire...");
         $review3->setGame($game5);
-        $review3->setLiked(null);
-        $review3->setMitigate(true);
+        $review3->setReaction(ReactionEnum::mitigate);
         $manager->persist($review3);
 
         $review4 = new Review();
         $review4->setUser($user);
         $review4->setContent("trop cool");
         $review4->setGame($game2);
-        $review4->setLiked(true);
-        $review4->setMitigate(false);
+        $review4->setReaction(ReactionEnum::like);
         $manager->persist($review4);
-        
+
         $review5 = new Review();
         $review5->setUser($user3);
         $review5->setContent("trop cool");
         $review5->setGame($game3);
-        $review5->setLiked(true);
-        $review5->setMitigate(false);
+        $review5->setReaction(ReactionEnum::like);
         $manager->persist($review5);
 
         $manager->flush();

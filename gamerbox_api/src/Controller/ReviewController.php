@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\ReactionEnum;
 use App\Entity\Review;
 use App\Entity\User;
 use App\Repository\GameRepository;
@@ -45,7 +46,25 @@ class ReviewController extends AbstractController
             $gameRepository->saveGame($game);
         }
 
-        $review = $serializer->deserialize($request->getContent(), Review::class, 'json');
+        $requestData = json_decode($request->getContent(), true);
+        $content = $requestData['content'];
+        $reaction = $requestData['reaction'];
+
+        $review = new Review();
+        $review->setContent($content);
+
+        if ($reaction === ReactionEnum::like->value) {
+            $review->setReaction(ReactionEnum::like);
+        }
+
+        if ($reaction === ReactionEnum::dislike->value) {
+            $review->setReaction(ReactionEnum::dislike);
+        }
+
+        if ($reaction === ReactionEnum::mitigate->value) {
+            $review->setReaction(ReactionEnum::mitigate);
+        }
+
         $review->setGame($game);
         $review->setUser($user);
 
@@ -62,7 +81,7 @@ class ReviewController extends AbstractController
 
     #[Route('/api/review/check/{igdbId}', name: 'app_check_review', methods: ['POST'])]
     #[IsGranted('ROLE_USER')]
-    public function checkReview(int $igdbId, Request $request, ReviewRepository $reviewRepository, GameRepository $gameRepository, EntityManagerInterface $manager, SerializerInterface $serializer): JsonResponse
+    public function checkReview(int $igdbId, ReviewRepository $reviewRepository, GameRepository $gameRepository, SerializerInterface $serializer): JsonResponse
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
@@ -85,7 +104,7 @@ class ReviewController extends AbstractController
     }
 
     #[Route('/api/review/delete/{id}', name: 'app_delete_review', methods: ['POST'])]
-    public function deleteReview(Review $review, Request $request, GameRepository $gameRepository, EntityManagerInterface $manager, SerializerInterface $serializer): JsonResponse
+    public function deleteReview(Review $review, EntityManagerInterface $manager): JsonResponse
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
@@ -105,12 +124,17 @@ class ReviewController extends AbstractController
     }
 
     #[Route('/api/review/get/{id}', name: 'app_get_user_reviews', methods: ['GET'])]
-    public function getUserReviews(User $user, ReviewRepository $reviewRepository, SerializerInterface $serializer): JsonResponse
+    public function getUserReviews(User $user, ReviewRepository $reviewRepository, Request $request, SerializerInterface $serializer, EntityManagerInterface $em): JsonResponse
     {
-        $reviews = $reviewRepository->findByUser($user);
+        $offset = $request->query->get('offset');
+        if ($offset) {
+            $reviews = $reviewRepository->loadMoreUserReview($user->getId(), $offset, $em);
+        } else {
+            $reviews = $reviewRepository->loadMoreUserReview($user->getId(), 0, $em);
+        }
 
         if (!$reviews) {
-            return new JsonResponse('No reviews', Response::HTTP_NOT_FOUND, [], false);
+            return new JsonResponse([], Response::HTTP_OK, [], false);
         }
 
         $context = (new ObjectNormalizerContextBuilder())

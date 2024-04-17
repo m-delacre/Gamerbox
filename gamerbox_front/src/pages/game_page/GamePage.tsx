@@ -59,7 +59,9 @@ function GamePage() {
         if (data) {
             setGame(data);
             if (data.banner) {
-                setBanner(data.banner);
+                setBanner(
+                    ImageModifier.replaceThumbWithScreenshotHuge(data.banner)
+                );
             } else {
                 setBanner(noBanner);
             }
@@ -173,10 +175,9 @@ function GamePage() {
 
 type ReviewData = {
     id: number;
-    user: {id: number, pseudonym: string, profilePicture: string};
+    user: { id: number; pseudonym: string; profilePicture: string };
     content: string;
-    liked: boolean | null;
-    mitigate: boolean | null;
+    reaction: string;
     game: { igdbId: number; name: string };
 };
 
@@ -242,8 +243,7 @@ function ReviewList({ igdbId }: ReviewListProsp) {
                         pseudonym={review.user.pseudonym}
                         content={review.content}
                         profilPicture={review.user.profilePicture}
-                        liked={review.liked}
-                        mitigate={review.mitigate}
+                        reaction={review.reaction}
                         userId={review.user.id}
                     />
                 ))}
@@ -266,9 +266,9 @@ type WishlistBtnProsp = {
 };
 
 type WishlistGame = {
-    Game: {igdbId: number, name: string, slug: string, cover: string | null},
-    User: {id: number, pseudonym: string},
-    addedDate: Date
+    Game: { igdbId: number; name: string; slug: string; cover: string | null };
+    User: { id: number; pseudonym: string };
+    addedDate: Date;
 };
 function WishlistBtn({ gameId }: WishlistBtnProsp) {
     const token = useSelector(selectToken);

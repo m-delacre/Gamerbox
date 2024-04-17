@@ -1,6 +1,5 @@
-import React from "react";
 import Header from "../../components/header/Header";
-import './GameNotFound.css';
+import "./GameNotFound.css";
 import { Link } from "react-router-dom";
 
 export default function GameNotFound() {
@@ -9,7 +8,9 @@ export default function GameNotFound() {
             <Header />
             <div className="gamenotfound">
                 <p>Sorry, we don't have this game 😥</p>
-                <Link to='/'><button>back home</button></Link>
+                <Link to="/">
+                    <button>back home</button>
+                </Link>
             </div>
         </div>
     );

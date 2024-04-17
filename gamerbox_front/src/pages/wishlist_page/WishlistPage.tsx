@@ -6,7 +6,7 @@ import ImageModifier from "../../services/imageModifier";
 import noPicture from "../../assets/img_not_available.jpg";
 import "./Wishlistpage.css";
 import useFetch from "../../services/useFetch";
-import { API_URL } from '../../../config.ts';
+import { API_URL } from "../../../config.ts";
 
 const baseURL = API_URL;
 
@@ -18,9 +18,9 @@ type UserInfo = {
 };
 
 type WishlistGame = {
-    Game: {igdbId: number, name: string, slug: string, cover: string | null},
-    User: {id: number, pseudonym: string},
-    addedDate: Date
+    Game: { igdbId: number; name: string; slug: string; cover: string | null };
+    User: { id: number; pseudonym: string };
+    addedDate: Date;
 };
 
 export default function WishlistPage() {
@@ -82,7 +82,7 @@ function Wishlist({ pageUserId }: WishlistDataProps) {
         );
     }
 
-    if(!data) {
+    if (!data) {
         return (
             <div className="wishlistpage-section-nogames">
                 <p>No wishlist available... 😞</p>

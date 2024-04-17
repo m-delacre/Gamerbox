@@ -24,7 +24,7 @@ type SearchResultsProps = {
 };
 
 const SearchResults = (props: SearchResultsProps) => {
-    const noCover: string = noCoverA; // Mettez ici votre valeur par défaut pour pas de couverture
+    const noCover: string = noCoverA;
 
     if (!props.visible || !props.data) {
         return <div className="searchResults noDisplay"></div>;

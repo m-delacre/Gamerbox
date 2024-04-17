@@ -39,24 +39,68 @@
     position: absolute;
 }
 
-.home-explain {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    width: 100%;
-    height: 800px;
-    position: relative;
-    background-color: #2e2e2e;
-    margin-bottom: 15px;
-    color: red;
-}
-
 .homepage main {
     display: flex;
     flex-direction: column;
     gap: 15px;
 }
+
+.home-explain {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 100px;
+    position: relative;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 800px;
+    height: fit-content;
+    position: relative;
+    margin-bottom: 15px;
+    padding: 20px;
+    margin-top: 150px;
+    margin-bottom: 150px;
+}
+
+.home-explain-case{
+    width: 45%;
+    height: 1080px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid white;
+    border-radius: 20px;
+    outline: 2px solid white;
+    outline-offset: 5px;
+    font-size: 20px;
+    box-sizing: border-box;
+}
+
+.home-explain-case img {
+    width: 100%;
+    height: 90%;
+}
+
+
+.home-explain-case-midimg img{
+    width: 80%;
+    height: 80%;
+}
+
+.home-explain-case-smallimg img{
+    width: 60%;
+    height: 70%;
+}
+
+.home-explain-case-horizon img {
+    width: 90%;
+    height: 40%;
+}
+
+/* LOADERS */
 
 .loading {
     display: inline-block;

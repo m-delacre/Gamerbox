@@ -28,9 +28,9 @@ type UserInfo = {
 };
 
 type WishlistGame = {
-    Game: {igdbId: number, name: string, slug: string, cover: string | null},
-    User: {id: number, pseudonym: string},
-    addedDate: Date
+    Game: { igdbId: number; name: string; slug: string; cover: string | null };
+    User: { id: number; pseudonym: string };
+    addedDate: Date;
 };
 
 type BtnFollowProps = {
@@ -150,8 +150,7 @@ type ReviewData = {
     id: number;
     user: { id: number; pseudonym: string; profilePicture: string };
     content: string;
-    liked: boolean | null;
-    mitigate: boolean | null;
+    reaction: string;
     game: { igdbId: number; name: string; cover: string };
 };
 
@@ -161,17 +160,40 @@ type ReviewListProsp = {
 
 function ReviewList({ userId }: ReviewListProsp) {
     const [reviewList, setReviewList] = useState<ReviewData[] | null>(null);
+    const [offset, setOffset] = useState<number>(0);
+    const [showBtn, setShowBtn] = useState<boolean>(false);
     const {
         data: reviewData,
         loading: reviewLoading,
         error: reviewError,
-    } = useFetch<ReviewData[]>(`${baseURL}review/get/${userId}`, "GET");
+    } = useFetch<ReviewData[]>(
+        `${baseURL}review/get/${userId}?offset=${offset}`,
+        "GET"
+    );
 
     useEffect(() => {
         if (reviewData) {
-            setReviewList(reviewData);
+            setReviewList((prevList) => {
+                const filteredData = reviewData.filter(
+                    (newReview) =>
+                        !prevList?.some(
+                            (oldReview) => oldReview.id === newReview.id
+                        )
+                );
+                return prevList ? [...prevList, ...filteredData] : filteredData;
+            });
+            if (reviewList && reviewList.length >= 3) {
+                setShowBtn(true);
+            }
+            if (reviewData.length === 0) {
+                setShowBtn(false);
+            }
         }
-    }, [reviewData]);
+    }, [reviewData, offset]);
+
+    const loadMoreReview = () => {
+        setOffset(offset + 3);
+    };
 
     if (reviewError) {
         console.log(reviewError);
@@ -190,14 +212,21 @@ function ReviewList({ userId }: ReviewListProsp) {
                         pseudonym={review.user.pseudonym}
                         content={review.content}
                         profilPicture={review.user.profilePicture}
-                        liked={review.liked}
-                        mitigate={review.mitigate}
+                        reaction={review.reaction}
                         userId={review.user.id}
                         gameCover={review.game.cover}
                         gameId={review.game.igdbId}
                         gameName={review.game.name}
                     />
                 ))}
+
+                {showBtn ? (
+                    <button className="btn-viewmore" onClick={loadMoreReview}>
+                        more review
+                    </button>
+                ) : (
+                    <></>
+                )}
             </div>
         );
     } else {
@@ -383,14 +412,12 @@ function ReviewsData({ userId }: UserDataProps) {
         );
     }
 
-    if (reviewNum) {
-        return (
-            <div className="profile-top-info-data-numbers">
-                <p>{reviewNum}</p>
-                <p>Reviews</p>
-            </div>
-        );
-    }
+    return (
+        <div className="profile-top-info-data-numbers">
+            <p>{reviewNum}</p>
+            <p>Reviews</p>
+        </div>
+    );
 }
 
 function WishlistSection({ userId }: UserDataProps) {

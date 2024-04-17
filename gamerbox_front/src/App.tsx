@@ -1,5 +1,5 @@
 import "./App.css";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, useNavigate } from "react-router-dom";
 import ErrorPage from "./pages/error_page/error_page.tsx";
 import GamePage from "./pages/game_page/GamePage.tsx";
 import Footer from "./components/footer/Footer.tsx";
@@ -10,6 +10,9 @@ import Profile from "./pages/user_profile/Profile.tsx";
 import WishlistPage from "./pages/wishlist_page/WishlistPage.tsx";
 import GameNotFound from "./pages/gamenotfound/GameNotFound.tsx";
 import Register from "./pages/register/Register.tsx";
+import { jwtDecode } from "jwt-decode";
+import { useDispatch, useSelector } from "react-redux";
+import { selectToken, setEmail, setId, setNotConnected, setPseudonym, setToken } from "./redux/userSlice.tsx";
 
 const router = createBrowserRouter([
     {
@@ -38,7 +41,7 @@ const router = createBrowserRouter([
     {
         path: "/profile/:userId",
         element: <Profile />,
-        errorElement: <ErrorPage />
+        errorElement: <ErrorPage />,
     },
     {
         path: "/wishlist/:userId",
@@ -55,9 +58,45 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
+    const isTokenValid = (token: string): boolean => {
+        try {
+            const decodedToken: any = jwtDecode(token);
+            const currentTime = Date.now() / 1000;
+            return decodedToken.exp > currentTime;
+        } catch (error) {
+            return false;
+        }
+    };
+
+    const dispatch = useDispatch();
+    // const navigate = useNavigate();
+
+    function disconnect() {
+        dispatch(setNotConnected());
+        dispatch(setId(null));
+        dispatch(setEmail(null));
+        dispatch(setPseudonym(null));
+        dispatch(setToken(null));
+        // navigate('/login');
+    }
+    
+    const token = useSelector(selectToken);
+    
+    if (token) {
+        const isTokenStillValid = isTokenValid(token);
+    
+        if (isTokenStillValid) {
+            console.log("token valide");
+        } else {
+            disconnect();
+        }
+    } else {
+        // Aucun token trouvé, peut-être que l'utilisateur n'est pas connecté
+    }
+
     return (
         <>
-            <RouterProvider router={router} /> 
+            <RouterProvider router={router} />
             <Footer />
         </>
     );

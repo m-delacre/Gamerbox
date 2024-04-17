@@ -1,40 +1,35 @@
 import "./GameReview.css";
-import noPicture from '../../assets/img_not_available.jpg';
+import noPicture from "../../assets/img_not_available.jpg";
 import { NavLink } from "react-router-dom";
-import { API_IMG_URL } from '../../../config.ts';
+import { API_IMG_URL } from "../../../config.ts";
 
-const imgURL =  API_IMG_URL;
+const imgURL = API_IMG_URL;
 
 type GameReviewProps = {
     pseudonym: string;
     content: string;
     profilPicture: string;
-    liked: boolean | null;
-    mitigate: boolean | null;
-    userId: number
+    reaction: string;
+    userId: number;
 };
 
 function GameReview({
     pseudonym,
     content,
     profilPicture,
-    liked,
-    mitigate,
-    userId
+    reaction,
+    userId,
 }: GameReviewProps) {
     return (
         <article>
-            <NavLink to={`http://localhost:5173/profile/${userId}`} className="review-part-one">
+            <NavLink
+                to={`http://localhost:5173/profile/${userId}`}
+                className="review-part-one"
+            >
                 {!profilPicture ? (
-                    <img
-                        src={noPicture}
-                        alt=""
-                    />
+                    <img src={noPicture} alt="" />
                 ) : (
-                    <img
-                        src={`${imgURL}${profilPicture}`}
-                        alt=""
-                    />
+                    <img src={`${imgURL}${profilPicture}`} alt="" />
                 )}
                 <h3>{pseudonym}</h3>
             </NavLink>
@@ -42,9 +37,9 @@ function GameReview({
                 <p>{content}</p>
             </section>
             <section className="review-part-three">
-                {mitigate === true ? <p>👊</p> : <></>}
-                {liked === false ? <p>👎</p> : <></>}
-                {liked === true ? <p>👍</p> : <></>}
+                {reaction === "mitigate" ? <p>👊</p> : <></>}
+                {reaction === "dislike" ? <p>👎</p> : <></>}
+                {reaction === "like" ? <p>👍</p> : <></>}
             </section>
         </article>
     );

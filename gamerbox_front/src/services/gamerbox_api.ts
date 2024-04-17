@@ -62,8 +62,7 @@ type ReviewData = {
 
 type reviewDataForm = {
     content: string,
-    liked: boolean | null,
-    mitigate: boolean | null
+    reaction: string | null
 }
 
 const baseURL = API_URL;
@@ -437,34 +436,8 @@ class GamerboxApi {
 
         let data: reviewDataForm = {
             "content":content,
-            "liked": false,
-            "mitigate": false
+            "reaction": reaction,
         }
-        switch (reaction) {
-            case 'like':
-                data = {
-                    "content":content,
-                    "liked": true,
-                    "mitigate": false
-                }
-              break;
-            case 'dislike':
-                data = {
-                    "content":content,
-                    "liked": false,
-                    "mitigate": false
-                }
-                break;
-            case 'mitigate':
-                data = {
-                    "content":content,
-                    "liked": null,
-                    "mitigate": true
-                }
-              break;
-            default:
-              console.log(`Error in form`);
-          }
 
         try {
             const response = await fetch(url, {

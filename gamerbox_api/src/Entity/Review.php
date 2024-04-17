@@ -24,18 +24,14 @@ class Review
     #[Groups(['review'])]
     private ?string $content = null;
 
-    #[ORM\Column(nullable: true)]
-    #[Groups(['review'])]
-    private ?bool $liked = null;
-
-    #[ORM\Column(nullable: true)]
-    #[Groups(['review'])]
-    private ?bool $mitigate = null;
-
     #[ORM\ManyToOne(inversedBy: 'reviews')]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['review'])]
     private ?Game $game = null;
+
+    #[Groups(['review'])]
+    #[ORM\Column(type: "string", enumType: ReactionEnum::class)]
+    private ?ReactionEnum $reaction = null;
 
     public function getId(): ?int
     {
@@ -66,30 +62,6 @@ class Review
         return $this;
     }
 
-    public function isLiked(): ?bool
-    {
-        return $this->liked;
-    }
-
-    public function setLiked(?bool $liked): static
-    {
-        $this->liked = $liked;
-
-        return $this;
-    }
-
-    public function isMitigate(): ?bool
-    {
-        return $this->mitigate;
-    }
-
-    public function setMitigate(?bool $mitigate): static
-    {
-        $this->mitigate = $mitigate;
-
-        return $this;
-    }
-
     public function getGame(): ?Game
     {
         return $this->game;
@@ -98,6 +70,18 @@ class Review
     public function setGame(?Game $game): static
     {
         $this->game = $game;
+
+        return $this;
+    }
+
+    public function getReaction(): ?ReactionEnum
+    {
+        return $this->reaction;
+    }
+
+    public function setReaction(ReactionEnum $reaction): static
+    {
+        $this->reaction = $reaction;
 
         return $this;
     }

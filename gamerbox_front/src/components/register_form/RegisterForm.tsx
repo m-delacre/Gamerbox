@@ -67,7 +67,6 @@ function RegisterForm() {
     const handleFileChange = (ev: React.ChangeEvent<HTMLInputElement>) => {
         const files = ev.target.files;
         if (files && files.length > 0) {
-            // Sélectionner uniquement le premier fichier
             setProfilePicture(files[0]);
         }
     };
@@ -115,6 +114,7 @@ function RegisterForm() {
                 <label>You can chose a profile picture 😎 :</label>
                 <input
                     type="file"
+                    accept="image/png, image/jpeg"
                     onChange={handleFileChange}
                 />
             </div>

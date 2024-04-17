@@ -18,9 +18,9 @@ type ThumbnailType = {
 
 function SearchPage() {
     const { gameName } = useParams();
-    const [input, setInput] = useState<string>(gameName ? gameName : "");
+    const input: string = gameName ? gameName : "";
     let [offset, setOffset] = useState<number>(0);
-    let [limit, setLimit] = useState<number>(5);
+    const limit: number = 5;
     let [data, setData] = useState<ThumbnailType[]>([]);
     const [noMore, setNomore] = useState<boolean>(false);
 

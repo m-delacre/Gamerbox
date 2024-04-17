@@ -10,8 +10,7 @@ type GameReviewProps = {
     pseudonym: string;
     content: string;
     profilPicture: string;
-    liked: boolean | null;
-    mitigate: boolean | null;
+    reaction: string;
     userId: number;
     gameId: number;
     gameCover: string;
@@ -22,8 +21,7 @@ function GameReviewProfile({
     pseudonym,
     content,
     profilPicture,
-    liked,
-    mitigate,
+    reaction,
     gameId,
     gameCover,
     gameName,
@@ -40,9 +38,9 @@ function GameReviewProfile({
                     />
                 )}
                 <h3>{pseudonym}</h3>
-                {mitigate === true ? <p>👊mitigate👊</p> : <></>}
-                {liked === false ? <p>👎dislike👎</p> : <></>}
-                {liked === true ? <p>👍like👍</p> : <></>}
+                {reaction === "mitigate" ? <p>👊mitigate👊</p> : <></>}
+                {reaction === "dislike" ? <p>👎dislike👎</p> : <></>}
+                {reaction === "like" ? <p>👍like👍</p> : <></>}
             </div>
             <section className="reviewProfile-middle">
                 <p>{content}</p>

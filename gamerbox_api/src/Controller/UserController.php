@@ -4,10 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Follow;
 use App\Entity\User;
-use App\Entity\Wishlist;
 use App\Repository\FollowRepository;
 use App\Repository\UserRepository;
-use App\Repository\WishlistRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,7 +22,7 @@ use Symfony\Component\Serializer\Context\Normalizer\ObjectNormalizerContextBuild
 
 class UserController extends AbstractController
 {
-    #[Route('/api/register', name: 'api_user_registration', methods:['POST'])]
+    #[Route('/api/register', name: 'api_user_registration', methods: ['POST'])]
     public function userRegistration(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, UserPasswordHasherInterface $passwordHasher, ValidatorInterface $validator): JsonResponse
     {
         $profilePictureFile = $request->files->get('profilePicture');
@@ -193,20 +191,19 @@ class UserController extends AbstractController
 
     #[IsGranted('ROLE_USER')]
     #[Route('/api/follow/remove/{id}', name: 'api_remove_follow', methods: ['POST'])]
-    public function removeFollowing(int $id, UserRepository $userRepository, FollowRepository $followRepository, SerializerInterface $serializer, EntityManagerInterface $manager): JsonResponse
+    public function removeFollowing(int $id, UserRepository $userRepository, FollowRepository $followRepository, EntityManagerInterface $manager): JsonResponse
     {
         $user = $this->getUser();
         $userFollowed = $userRepository->findOneById($id);
 
-        $followToDelete = $followRepository->findOneBy(['follower'=>$user, 'followed' => $userFollowed]);
+        $followToDelete = $followRepository->findOneBy(['follower' => $user, 'followed' => $userFollowed]);
 
         if ($followToDelete) {
             $manager->remove($followToDelete);
             $manager->flush();
             return new JsonResponse('Game delete from your wishlist', Response::HTTP_NO_CONTENT, [], true);
         }
-    
+
         return new JsonResponse('', Response::HTTP_NOT_FOUND, [], true);
-        
     }
 }
