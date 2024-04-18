@@ -10,6 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: GameRepository::class)]
+#[ORM\Table(name: "Game", options: ["engine" => "InnoDB"])]
 class Game
 {
     #[ORM\Id]
@@ -18,15 +19,15 @@ class Game
     private ?int $id = null;
 
     #[ORM\Column]
-    #[Groups(['full_game'])]
+    #[Groups(['full_game', 'wishlist_game', 'review', 'review_full'])]
     private ?int $igdbId = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['full_game'])]
+    #[Groups(['full_game', 'wishlist_game', 'review', 'review_full'])]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['full_game'])]
+    #[Groups(['full_game', 'wishlist_game'])]
     private ?string $slug = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -37,7 +38,7 @@ class Game
     #[Groups(['full_game'])]
     private ?\DateTimeInterface $releaseDate = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['full_game'])]
     private ?string $developers = null;
 
@@ -46,7 +47,7 @@ class Game
     private ?string $banner = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['full_game'])]
+    #[Groups(['full_game', 'wishlist_game', 'review', 'review_full'])]
     private ?string $cover = null;
 
     #[ORM\ManyToMany(targetEntity: GameMode::class, inversedBy: 'games')]
@@ -61,11 +62,19 @@ class Game
     #[Groups(['full_game'])]
     private Collection $genre;
 
+    #[ORM\OneToMany(targetEntity: Review::class, mappedBy: 'game')]
+    private Collection $reviews;
+
+    #[ORM\OneToMany(targetEntity: WishlistGame::class, mappedBy: 'Game')]
+    private Collection $wishlistGames;
+
     public function __construct()
     {
         $this->modes = new ArrayCollection();
         $this->theme = new ArrayCollection();
         $this->genre = new ArrayCollection();
+        $this->reviews = new ArrayCollection();
+        $this->wishlistGames = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -237,6 +246,66 @@ class Game
     public function setCover(?string $cover): static
     {
         $this->cover = $cover;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Review>
+     */
+    public function getReviews(): Collection
+    {
+        return $this->reviews;
+    }
+
+    public function addReview(Review $review): static
+    {
+        if (!$this->reviews->contains($review)) {
+            $this->reviews->add($review);
+            $review->setGame($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReview(Review $review): static
+    {
+        if ($this->reviews->removeElement($review)) {
+            // set the owning side to null (unless already changed)
+            if ($review->getGame() === $this) {
+                $review->setGame(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, WishlistGame>
+     */
+    public function getWishlistGames(): Collection
+    {
+        return $this->wishlistGames;
+    }
+
+    public function addWishlistGame(WishlistGame $wishlistGame): static
+    {
+        if (!$this->wishlistGames->contains($wishlistGame)) {
+            $this->wishlistGames->add($wishlistGame);
+            $wishlistGame->setGame($this);
+        }
+
+        return $this;
+    }
+
+    public function removeWishlistGame(WishlistGame $wishlistGame): static
+    {
+        if ($this->wishlistGames->removeElement($wishlistGame)) {
+            // set the owning side to null (unless already changed)
+            if ($wishlistGame->getGame() === $this) {
+                $wishlistGame->setGame(null);
+            }
+        }
 
         return $this;
     }

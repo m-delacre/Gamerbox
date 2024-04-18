@@ -1,0 +1,52 @@
+.modalScreen {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.819);
+    z-index: 4;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.alertModal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #11112f;
+    border: 2px solid white;
+    width: 400px;
+    height: fit-content;
+    min-height: 200px;
+    padding: 10px 50px;
+    color: white;
+    position: relative;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 18px;
+}
+
+#modalCross {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background-color: white;
+    border: 0;
+    border-radius: 50px;
+    padding: 5px;
+    width: fit-content;
+    height: fit-content;
+}
+
+#modalCross button {
+    width: 100%;
+    height: 100%;
+    font-weight: 700;
+    font-size: 18px;
+    color: #11112f;
+    background-color: rgba(0, 0, 0, 0);
+    border: 0;
+}
+

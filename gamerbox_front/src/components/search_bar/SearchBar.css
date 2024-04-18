@@ -24,16 +24,16 @@ input[type="text"]:active {
 }
 
 .searchResults {
-    display: flex;
+    display: none;
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    width: 400px;
+    width: 500px;
     height: fit-content;
-    padding: 20px;
+    padding: 10px;
     position: absolute;
     top: 55px;
-    left: 0;
+    left: -50px;
     background-color: white;
     border-radius: 20px;
 }
@@ -42,6 +42,7 @@ input[type="text"]:active {
     color: #111111;
     font-weight: 600;
     font-size: 20px;
+    width: 100%;
 }
 
 .noDisplay {
@@ -50,4 +51,10 @@ input[type="text"]:active {
 
 .display {
     display: block;
+}
+
+.nostyle {
+    border: 0;
+    outline: 0;
+    background: none;
 }

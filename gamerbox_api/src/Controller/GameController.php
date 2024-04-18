@@ -2,33 +2,28 @@
 
 namespace App\Controller;
 
+use App\Entity\WishlistGame;
+use App\Repository\GameRepository;
+use App\Repository\ReviewRepository;
+use App\Repository\WishlistGameRepository;
 use App\Service\GameBuilder;
 use DateTime;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Component\Serializer\Context\Normalizer\ObjectNormalizerContextBuilder;
 
 class GameController extends AbstractController
 {
-    private $client = HttpClientInterface::class;
     private $gameBuilder = GameBuilder::class;
 
-    public function __construct(HttpClientInterface $client, GameBuilder $gameBuilder)
+    public function __construct(GameBuilder $gameBuilder)
     {
-        $this->client = $client->withOptions([
-            'base_uri' => 'https://api.igdb.com/v4/',
-            'headers' => [
-                'Accept' => 'application/json',
-                'Client-ID' => $_ENV['CLIENT_ID'],
-            ],
-            'auth_bearer' => $_ENV['AUTH_BEARER'],
-        ]);
-
         $this->gameBuilder = $gameBuilder;
     }
 
@@ -56,14 +51,115 @@ class GameController extends AbstractController
     }
 
     #[Route('/api/game/{id}', name: 'api_game_detail', methods: ['GET'])]
-    public function getGame(int $id, SerializerInterface $serializer): JsonResponse
+    public function getGame(int $id, GameRepository $gameRepository, SerializerInterface $serializer): JsonResponse
     {
-        $game = $this->gameBuilder->buildGame($id);
+        $findGame = $gameRepository->findOneByIgdbId($id);
+        if ($findGame) {
+            $game = $findGame;
+        } else {
+            $game = $this->gameBuilder->buildGame($id);
+        }
         $context = (new ObjectNormalizerContextBuilder())
             ->withGroups('full_game')
             ->toArray();
         $serializedGame = $serializer->serialize($game, 'json', $context);
 
         return new JsonResponse($serializedGame, Response::HTTP_OK, [], true);
+    }
+
+    #[IsGranted('ROLE_USER')]
+    #[Route('/api/game/whishlist/{igdbId}', name: 'api_game_add_wishlist', methods: ['POST'])]
+    public function addGameToWishlist(int $igdbId, WishlistGameRepository $wishlistGameRepository, SerializerInterface $serializer, EntityManagerInterface $em, GameRepository $gameRepository, GameBuilder $gameBuilder): JsonResponse
+    {
+        $game = $gameRepository->findOneByIgdbId($igdbId);
+        $user = $this->getUser();
+
+        if (!$game) {
+            $game = $gameBuilder->buildGame($igdbId);
+            $gameRepository->saveGame($game);
+        }
+
+        $wishlist = $wishlistGameRepository->findOneBy(['User' => $user, 'Game' => $game]);
+
+        if (!$wishlist) {
+            $newWishlist = new WishlistGame();
+            $newWishlist->setUser($user);
+            $newWishlist->setGame($game);
+            $newWishlist->setAddedDate(new DateTime());
+
+            $em->persist($newWishlist);
+            $em->flush();
+
+            $context = (new ObjectNormalizerContextBuilder())
+                ->withGroups('wishlist_game')
+                ->toArray();
+            $serializedGame = $serializer->serialize($newWishlist, 'json', $context);
+
+            return new JsonResponse($serializedGame, Response::HTTP_OK, [], true);
+        }
+
+        if ($wishlist) {
+            return new JsonResponse(null, Response::HTTP_CONFLICT, [], false);
+        }
+    }
+
+    #[IsGranted('ROLE_USER')]
+    #[Route('/api/game/whishlist/remove/{igdbId}', name: 'api_game_remove_wishlist', methods: ['POST'])]
+    public function removeGameFromWishlist(int $igdbId, WishlistGameRepository $wishlistGameRepository, EntityManagerInterface $em, GameRepository $gameRepository): JsonResponse
+    {
+        $game = $gameRepository->findOneByIgdbId($igdbId);
+        $user = $this->getUser();
+
+        if (!$game) {
+            return new JsonResponse('Game not found', Response::HTTP_NOT_FOUND, [], true);
+        }
+
+        $wishlist = $wishlistGameRepository->findOneByUser($user);
+
+        $wishlist->removeGame($game);
+
+        $em->persist($wishlist);
+        $em->flush();
+
+        return new JsonResponse('Game delete from your wishlist', Response::HTTP_NO_CONTENT, [], true);
+    }
+
+    #[Route('/api/game/review/{gameId}', name: 'app_get_game_reviews', methods: ['GET'])]
+    public function getGameReviews(int $gameId, Request $request, GameRepository $gameRepository, ReviewRepository $reviewRepository, SerializerInterface $serializer, EntityManagerInterface $em): JsonResponse
+    {
+        $game = $gameRepository->findOneByIgdbId($gameId);
+        $offset = $request->query->get('offset');
+        if ($game && $offset) {
+            $reviews = $reviewRepository->loadMoreGameReview($game->getId(), $offset, $em);
+
+            if (!$reviews) {
+                return new JsonResponse([], Response::HTTP_OK, [], false);
+            }
+
+            $context = (new ObjectNormalizerContextBuilder())
+                ->withGroups('review')
+                ->toArray();
+            $serializedReviews = $serializer->serialize($reviews, 'json', $context);
+
+            return new JsonResponse($serializedReviews, Response::HTTP_OK, [], true);
+        }
+
+        if ($game && !$offset) {
+            $reviews = $reviewRepository->loadMoreGameReview($game->getId(), 0, $em);
+            if (!$reviews) {
+                return new JsonResponse([], Response::HTTP_OK, [], false);
+            }
+
+            $context = (new ObjectNormalizerContextBuilder())
+                ->withGroups('review')
+                ->toArray();
+            $serializedReviews = $serializer->serialize($reviews, 'json', $context);
+
+            return new JsonResponse($serializedReviews, Response::HTTP_OK, [], true);
+        }
+
+        if (!$game) {
+            return new JsonResponse([], Response::HTTP_OK, [], true);
+        }
     }
 }

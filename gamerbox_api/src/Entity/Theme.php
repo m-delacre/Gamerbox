@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ThemeRepository::class)]
+#[ORM\Table(name: "Theme", options: ["engine" => "InnoDB"])]
 class Theme
 {
     #[ORM\Id]

@@ -1,0 +1,59 @@
+.reviewModalPage {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    z-index: 3;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.reviewModal {
+    width: 600px;
+    height: fit-content;
+    min-height: 600px;
+    background-color: #11112f;
+    border: 2px solid white;
+    border-radius: 20px;
+    padding: 20px;
+    z-index: 4;
+    position: relative;
+}
+
+.reviewModal h2 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#closeReviewModal button{
+    position: absolute;
+    top: 25px;
+    right: 25px;
+    background-color: #11112f;
+    border: 2px solid white;
+    outline: 0;
+    width: fit-content;
+    height: fit-content;
+    border-radius: 50%;
+    padding: 6px 10px;
+}
+
+#closeReviewModal button{
+    outline: 0;
+    width: fit-content;
+    height: fit-content;
+    border-radius: 50%;
+    font-size: 10px;
+    font-size: 16px;
+    font-weight: 800;
+    color: #24FF00;
+}
+
+#closeReviewModal button:hover{
+    cursor: pointer;
+}

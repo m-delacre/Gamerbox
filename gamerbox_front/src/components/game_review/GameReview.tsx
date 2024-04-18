@@ -1,25 +1,45 @@
-import './GameReview.css';
+import "./GameReview.css";
+import noPicture from "../../assets/img_not_available.jpg";
+import { NavLink } from "react-router-dom";
+import { API_IMG_URL } from "../../../config.ts";
 
-interface GameReviewProps {
-    name: string;
+const imgURL = API_IMG_URL;
+
+type GameReviewProps = {
+    pseudonym: string;
     content: string;
     profilPicture: string;
-    note: number;
-}
+    reaction: string;
+    userId: number;
+};
 
-function GameReview({ name, content, profilPicture, note }: GameReviewProps) {
+function GameReview({
+    pseudonym,
+    content,
+    profilPicture,
+    reaction,
+    userId,
+}: GameReviewProps) {
     return (
         <article>
-            <section className="review-part review-part-one">
-                <img src={profilPicture} alt="profilPicture" />
-            </section>
-            <section className="review-part review-part-two">
-                <h3>{name}</h3>
+            <NavLink
+                to={`http://localhost:5173/profile/${userId}`}
+                className="review-part-one"
+            >
+                {!profilPicture ? (
+                    <img src={noPicture} alt="" />
+                ) : (
+                    <img src={`${imgURL}${profilPicture}`} alt="" />
+                )}
+                <h3>{pseudonym}</h3>
+            </NavLink>
+            <section className="review-part-two">
                 <p>{content}</p>
-                <button className="btn-viewmore">Voir plus</button>
             </section>
-            <section className="review-part review-part-three">
-                <p>{note}/5</p>
+            <section className="review-part-three">
+                {reaction === "mitigate" ? <p>👊</p> : <></>}
+                {reaction === "dislike" ? <p>👎</p> : <></>}
+                {reaction === "like" ? <p>👍</p> : <></>}
             </section>
         </article>
     );

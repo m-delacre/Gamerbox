@@ -38,7 +38,7 @@ class GameBuilder
         $this->gameModeRepository = $gameModeRepository;
     }
 
-    function buildGame(int $igdbId): Game
+    function buildGame(int $igdbId): ?Game
     {
         $game = new Game();
 
@@ -48,6 +48,10 @@ class GameBuilder
             ['body' => 'fields id,artworks,cover,name,first_release_date,slug,summary,genres,game_modes,themes; where id = ' . $igdbId . ';']
         );
         $gameData = json_decode($response->getContent(), true);
+
+        if(!$gameData) {
+            return null;
+        }
 
         $game->setIgdbId($igdbId);
         $game->setName($gameData[0]['name']);
@@ -96,7 +100,6 @@ class GameBuilder
             foreach ($gameData[0]['genres'] as $genreId) {
                 $genre = $this->genreRepository->findOneByIgdbId($genreId);
                 if ($genre === null) {
-                    
                 } else {
                     $game->addGenre($genre);
                 }
@@ -107,7 +110,6 @@ class GameBuilder
             foreach ($gameData[0]['game_modes'] as $game_modeId) {
                 $gameMode = $this->gameModeRepository->findOneByIgdbId($game_modeId);
                 if ($gameMode === null) {
-                    
                 } else {
                     $game->addMode($gameMode);
                 }
@@ -118,7 +120,6 @@ class GameBuilder
             foreach ($gameData[0]['themes'] as $themeId) {
                 $theme = $this->themeRepository->findOneByIgdbId($themeId);
                 if ($theme === null) {
-                    
                 } else {
                     $game->addTheme($theme);
                 }
@@ -144,40 +145,42 @@ class GameBuilder
             array_push($resultsIds, $searchResult[$resultsIndex]['id']);
         }
 
-        $requestBodyIds = implode(",", $resultsIds);
+        if (!empty($resultsIds)) {
+            $requestBodyIds = implode(",", $resultsIds);
 
-        // get covers
-        $response = $this->client->request(
-            'POST',
-            'covers',
-            ['body' => 'fields image_id,url; where game = (' . $requestBodyIds . ');']
-        );
-        $coversData = json_decode($response->getContent(), true);
+            // get covers
+            $response = $this->client->request(
+                'POST',
+                'covers',
+                ['body' => 'fields image_id,url; where game = (' . $requestBodyIds . ');']
+            );
+            $coversData = json_decode($response->getContent(), true);
 
-        foreach ($searchResult as $result) {
-            $thumbnail = [];
-            $thumbnail['igdbId'] = $result['id'];
-            $thumbnail['name'] = $result['name'];
-            if (array_key_exists('cover', $result)) {
-                $targetId = $result['cover'];
-                foreach ($coversData as $cover) {
-                    if ($cover['id'] == $targetId) {
-                        $url = $cover['url'];
-                        $thumbnail['cover'] = $url;
-                        break;
+            foreach ($searchResult as $result) {
+                $thumbnail = [];
+                $thumbnail['igdbId'] = $result['id'];
+                $thumbnail['name'] = $result['name'];
+                if (array_key_exists('cover', $result)) {
+                    $targetId = $result['cover'];
+                    foreach ($coversData as $cover) {
+                        if ($cover['id'] == $targetId) {
+                            $url = $cover['url'];
+                            $thumbnail['cover'] = $url;
+                            break;
+                        }
                     }
+                } else {
+                    $thumbnail['cover'] = null;
                 }
-            } else {
-                $thumbnail['cover'] = null;
-            }
 
-            if (array_key_exists('first_release_date', $result)) {
-                $releaseDateUnixTimestamp = $result['first_release_date'];
-                $releaseDate = new DateTime("@$releaseDateUnixTimestamp");
-                $thumbnail['releaseDate'] = $releaseDate;
-            }
+                if (array_key_exists('first_release_date', $result)) {
+                    $releaseDateUnixTimestamp = $result['first_release_date'];
+                    $releaseDate = new DateTime("@$releaseDateUnixTimestamp");
+                    $thumbnail['releaseDate'] = $releaseDate;
+                }
 
-            array_push($searchThumbnail, $thumbnail);
+                array_push($searchThumbnail, $thumbnail);
+            }
         }
 
         return $searchThumbnail;
