@@ -4,7 +4,7 @@ Gamerbox is a personal project that I did to develop my skills, I was inspired b
      - [ViteJS](https://github.com/vitejs/vite)
      - [React](https://github.com/facebook/react)
      - [TypeScript](https://github.com/microsoft/TypeScript)
-    - Back-end:
+   - Back-end:
       - [Symfony](https://github.com/symfony/symfony)
       - [MySQL](https://www.mysql.com/fr/)
 ## :sparkles: Features
