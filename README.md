@@ -34,7 +34,7 @@ to configure the JWT Token see the [LexikJWTAuthenticationBundle](https://github
 ```php
 JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem
 JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem
-JWT_PASSPHRASE=tomate
+JWT_PASSPHRASE=YourPassPhrase
 ```
 Create the database :
 ```php
